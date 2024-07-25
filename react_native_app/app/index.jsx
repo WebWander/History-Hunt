@@ -1,14 +1,27 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View } from 'react-native';
+import { Link } from 'expo-router';
 
-const RootLayout = () => {
+export default function App() {
   return (
-    <View>
-      <Text>RootLayout</Text>
+    <View style={styles.container}>
+      <Text>Welcome to HistoryHunt App!</Text>
+      <Link href="/profile"> 
+      <Text>Go to Profile</Text>
+      </Link>
+      <StatusBar style="auto" />
     </View>
-  )
+  );
 }
 
-export default RootLayout
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
 
-const styles = StyleSheet.create({})
+
+
