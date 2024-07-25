@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "HistoryHunt",
-    "scheme": "history_hunt",
-    "slug": "history_hunt",
+    "slug": "HistoryHunt",
+    "scheme": "HistoryHunt",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -24,8 +24,9 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
+    "plugins":[
       "expo-router"
     ]
   }
 }
+

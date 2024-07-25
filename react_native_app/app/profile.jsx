@@ -1,3 +1,20 @@
+/* import React from 'react';
+import { View, Text } from 'react-native';
+import ProfileScreen from './screens/ProfileScreen';
+import LoginScreen from './screens/LoginScreen';
+
+const Index = () => {
+  const isAuthenticated = false; // Replace with actual authentication logic
+
+  if (isAuthenticated) {
+    return <ProfileScreen />;
+  } else {
+    return <LoginScreen />;
+  }
+};
+
+export default Index; */
+
 import React from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

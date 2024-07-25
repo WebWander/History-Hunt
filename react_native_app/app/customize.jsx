@@ -16,7 +16,7 @@ export default function CustomizeScreen() {
     <SafeAreaView className="flex-1 bg-white px-6 "> 
 
       {/* The header contains a back button. */}
-        <Link href="/" className="flex-row items-center mb-6"> {/* // TODO change index to profile when done with authentication */}
+        <Link href="/profile" className="flex-row items-center mb-6"> {/* // TODO change index to profile when done with authentication */}
         <Ionicons name="arrow-back" size={32} color="#0951E2" t/>
       </Link>
       
