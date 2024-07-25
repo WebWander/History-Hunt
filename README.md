@@ -9,3 +9,5 @@ $ npx expo install expo-router react-native-safe-area-context react-native-scree
 "main": "expo-router/entry"
 
 App.js replaced with /app/_layout.js as an entry point of the application
+
+app.json - "scheme": "history_hunt"
