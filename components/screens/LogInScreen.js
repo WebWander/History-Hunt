@@ -1,151 +1,144 @@
-// import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
-import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import React, { useState, useEffect } from 'react';
+import {  StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
+import { signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../firebaseAuth';
+import Button from '../ui/Button';
 
-const LogInScreen = () => {
+
+
+const LogInScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+
+  // useEffect(() => {
+  //   const unsubscribe = auth.onAuthStateChanged(user => {
+  //     if (user) {
+  //       navigation.replace("Home")
+  //     }
+  //   })
+
+  //   return unsubscribe
+  // }, [])
 
   
 
-  const handleSignUp = async () => {
-
-
-    console.log(`Email: ${email}, Name: ${name}, Password: ${password}`);
-
-    if (!email || !password) {
-      console.error('Email and password are required.');
-      return;
-    }
-
-    // Simple email format validation
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email)) {
-      console.error('Invalid email format.');
-      return;
-    }
-
+  const handleLogin = async() => {
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+    
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, trimmedPassword);
       const user = userCredential.user;
-      await updateProfile(user, { displayName: name });
+      await updateProfile(user);
       console.log('Registered with:', user.email);
     } catch (error) {
       console.error('Error signing up:', error.message);
     }
-  };
+  }
+  
 
-  // const handleLogin = async() => {
-  //   try {
-  //     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  //     const user = userCredential.user;
-  //     console.log('Logged in with:', user.email);
-  //   } catch (error) {
-  //     console.error('Error signing up:', error.message);
-  //   }
-  // }
 
-  return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior='padding'
-    >
-      <View style={styles.heading}>
-        <Text style={{fontSize: 20}}>Profile</Text>
+  return(
+    <View  style={styles.mainContainer}>
+      <View>
+        <Image 
+          source={require('../../assets/logo.png')}
+          style={{marginLeft: 190, width: 50, height: 55}}
+          />
       </View>
-      <View style={styles.inputContainer}>
+      <View style={styles.container}>
+        <Text style={{fontSize: 30, fontStyle: 'italic',  color: '#ba55d3', marginBottom: 25}}>History<Text style={{color: '#dda0dd'}}>Hunt</Text></Text>
+        <Text style={{fontSize: 40}}>Log In</Text>
+      </View>
+      <View style={styles.textInputContainer} >
         <TextInput 
           placeholder='Email'
           value={email}
           onChangeText={text => setEmail(text)}
-          style={styles.input}
-        />
-        <TextInput 
-          placeholder='Name'
-          value={name}
-          onChangeText={text => setName(text)}
-          style={styles.input}
-        />
-        <TextInput 
+          style={styles.textInput}
+         />
+        <TextInput  
           placeholder='Password'
           value={password}
           onChangeText={text => setPassword(text)}
-          style={styles.input}
-          
-        />
+          style={styles.textInput} />
       </View>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          onPress={handleSignUp}
-          style={[styles.button, styles.buttonOutline]}
+      <View>
+        <Button
+          onPress={handleLogin} 
         >
-          <Text style={styles.buttonOutlineText}>SIGN UP</Text>
+          <Text style={{color: 'white', fontSize: 16, fontWeight: 900}}>CONTINUE</Text>
+        </Button>
+      </View>
+      <View style={styles.note}>
+        <Text style={{fontSize: 13}}>Need to make an account?</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+          <Text style={{color: 'blue'}}>Sign up here</Text>
         </TouchableOpacity>
-        {/* <TouchableOpacity
-          onPress={handleLogin}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity> */}
+        
       </View>
-    </KeyboardAvoidingView>
-  );
-};
+      
+
+    </View>
+  )
+  
+
+
+}
+
+const styles = StyleSheet.create({
+  mainContainer: {
+    marginTop: 85
+  },
+  textInputContainer: {
+    marginBottom: 15,
+   
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: 'gray',
+    height: 50,
+    padding: 10,
+    marginLeft: 90,
+    marginRight: 90,
+    marginBottom: 15,
+    
+    
+  },
+  container: {
+   alignItems: 'center',
+   padding: 10,
+   marginBottom: 10,
+   
+    
+  },
+
+  button: {
+    alignItems: 'center',
+    backgroundColor: '#007AFF', // Customize the button color
+    borderRadius: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 5,
+    marginLeft: 50,
+    marginRight: 50,
+    marginBottom: 30,
+    
+    
+  },
+  note: {
+    alignItems: 'center',
+    marginBottom: 10,
+
+  },
+  terms: {
+    alignItems: 'center',
+  }
+
+
+
+  
+});
 
 export default LogInScreen;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  inputContainer: {
-    width: '65%',
-  },
-  input: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: '#d3d3d3',
-    borderRadius: 10,
-  },
-  buttonContainer: {
-    width: '68%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  button: {
-    backgroundColor: '#0782F9',
-    width: '100%',
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: '700',
-  },
-  buttonOutline: {
-    marginTop: 5,
-    borderWidth: 2,
-    width: '100%',
-    padding: 10,
-    borderRadius: 20,
-    alignItems: 'center',
-  },
-  buttonOutlineText: {
-    color: 'white',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  heading: {
-    marginTop: 5,
-  }
-});
+
