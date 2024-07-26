@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#007AFF', // Customize the button color
     borderRadius: 20,
-    paddingVertical: 5,
+    paddingVertical: 10,
     paddingHorizontal: 5,
     marginLeft: 60,
     marginRight: 60,
