@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {  StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
-import { signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '../../firebaseAuth';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import Button from '../ui/Button';
 
 
@@ -10,20 +9,23 @@ const LogInScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-
   
-
+  const auth = getAuth();
   const handleLogin = async() => {
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
     
     try {
       const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, trimmedPassword);
+      // Signed in 
       const user = userCredential.user;
-      await updateProfile(user);
-      console.log('Registered with:', user.email);
+      // Do something with the user
+      console.log('User signed in:', user);
     } catch (error) {
-      console.error('Error signing up:', error.message);
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      // Handle the error
+      console.error('Error signing in:', errorCode, errorMessage);
     }
   }
   
