@@ -12,7 +12,7 @@ const SignUpScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   // const [error, setError] = useState('');
 
-  
+
 
   const handleSignUp = async () => {
 
@@ -45,7 +45,7 @@ const SignUpScreen = ({ navigation }) => {
       setPassword('');
       setName('');
       
-
+      navigation.navigate('Login');
 
     } catch (error) {
       console.error('Error signing up:', error.message);

@@ -1,16 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {  StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { useNavigation } from '@react-navigation/native';
 import Button from '../ui/Button';
 
 
 
-const LogInScreen = ({ navigation }) => {
+
+
+
+
+const LogInScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  
   const auth = getAuth();
+  const navigation = useNavigation(); 
+
+  
+ 
   const handleLogin = async() => {
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
@@ -21,6 +29,11 @@ const LogInScreen = ({ navigation }) => {
       const user = userCredential.user;
       // Do something with the user
       console.log('User signed in:', user);
+      setEmail('');
+      setPassword('');
+
+      
+      navigation.navigate('HomeScreen');
     } catch (error) {
       const errorCode = error.code;
       const errorMessage = error.message;

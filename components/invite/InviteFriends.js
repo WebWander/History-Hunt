@@ -5,16 +5,31 @@ import { Ionicons } from '@expo/vector-icons';
 
 const InviteFriends = () => {
   return (
-    <View>
+    <View style={styles.mainContainer}>
      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Login')}>
         <Ionicons name="arrow-back" size={24} color="black" style={{marginLeft: 20}} />
      </TouchableOpacity>
-      <Text>Invite Friends</Text>
-      <Search  cancelIcon={true}/>
+     <View style={styles.headingContainer}>
+      <Text style={styles.headingText}>Invite Friends</Text>
+     </View>
+      <Search  cancelIcon={true} />
     </View>
   )
 }
 
 export default InviteFriends
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  mainContainer: {
+   marginTop: 50,
+  },
+  headingText: {
+    fontSize: 30,
+    marginLeft: 20,
+    marginBottom: 20,
+    marginTop: 20,
+  },
+  headingContainer: {
+    alignItems: 'center',
+  },
+})
