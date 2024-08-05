@@ -1,91 +1,94 @@
 import React, { useState, useEffect } from 'react';
-import {  StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert } from 'react-native';
 import { signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '../../firebaseAuth';
-import Button from '../ui/Button';
-
+import { auth } from '../../firebaseConfig';
+import  Button  from '../ui/Button';
+import  Loading  from '../Loading';
+import { useAuth } from '../../context/authContext';
 
 
 const LogInScreen = ({ navigation }) => {
+  const [loading, setLoading] = useState(false);
+  const { login} = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // useEffect(() => {
-  //   const unsubscribe = auth.onAuthStateChanged(user => {
-  //     if (user) {
-  //       navigation.replace("Home")
-  //     }
-  //   })
-
-  //   return unsubscribe
-  // }, [])
-
-  
-
-  const handleLogin = async() => {
-    const trimmedEmail = email.trim();
-    const trimmedPassword = password.trim();
-    
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, trimmedPassword);
-      const user = userCredential.user;
-      await updateProfile(user);
-      console.log('Registered with:', user.email);
-    } catch (error) {
-      console.error('Error signing up:', error.message);
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Please fill in all fields');
+      return;
     }
-  }
+
+    setLoading(true);
+
   
+    try {
+      const response = await login(email, password);
+      console.log('User logged in:', response);
+      if (response.success) {
+        Alert.alert('Success', 'User logged in successfully');
+        navigation.navigate('Profile'); // Redirect to Profile screen after successful login
+      } else {
+        Alert.alert('Error', response.msg);
+      }
+    } catch (error) {
+      console.error('Error  logging in:', error.message);
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  
+  };
 
-
-  return(
-    <View  style={styles.mainContainer}>
+  return (
+    <View style={styles.mainContainer}>
       <View>
-        <Image 
+        <Image
           source={require('../../assets/logo.png')}
-          style={{marginLeft: 190, width: 50, height: 55}}
-          />
+          style={{ marginLeft: 190, width: 50, height: 55 }}
+        />
       </View>
       <View style={styles.container}>
-        <Text style={{fontSize: 30, fontStyle: 'italic',  color: '#ba55d3', marginBottom: 25}}>History<Text style={{color: '#dda0dd'}}>Hunt</Text></Text>
-        <Text style={{fontSize: 40}}>Log In</Text>
+        <Text style={{ fontSize: 30, fontStyle: 'italic', color: '#ba55d3', marginBottom: 25 }}>
+          History<Text style={{ color: '#dda0dd' }}>Hunt</Text>
+        </Text>
+        <Text style={{ fontSize: 40 }}>Log In</Text>
       </View>
-      <View style={styles.textInputContainer} >
-        <TextInput 
+      <View style={styles.textInputContainer}>
+        <TextInput
           placeholder='Email'
           value={email}
-          onChangeText={text => setEmail(text)}
+          onChangeText={setEmail}
           style={styles.textInput}
-         />
-        <TextInput  
+        />
+        <TextInput
           placeholder='Password'
           value={password}
-          onChangeText={text => setPassword(text)}
-          style={styles.textInput} />
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.textInput}
+        />
       </View>
       <View>
-        <Button
-          onPress={handleLogin} 
-        >
-          <Text style={{color: 'white', fontSize: 16, fontWeight: 900}}>CONTINUE</Text>
-        </Button>
+        {loading ? (
+          <View style={{ alignItems: 'center' }}>
+            <Loading />
+          </View>
+        ) : (
+          <Button onPress={handleLogin}>
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: '900' }}>CONTINUE</Text>
+          </Button>
+        )}
       </View>
       <View style={styles.note}>
-        <Text style={{fontSize: 13}}>Need to make an account?</Text>
+        <Text style={{ fontSize: 13 }}>Need to make an account?</Text>
         <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-          <Text style={{color: 'blue'}}>Sign up here</Text>
+          <Text style={{ color: 'blue' }}>Sign up here</Text>
         </TouchableOpacity>
-        
       </View>
-      
-
     </View>
-  )
-  
-
-
-}
-
+  );
+};
 const styles = StyleSheet.create({
   mainContainer: {
     marginTop: 85
@@ -133,12 +136,8 @@ const styles = StyleSheet.create({
   terms: {
     alignItems: 'center',
   }
-
-
-
   
 });
 
 export default LogInScreen;
-
 

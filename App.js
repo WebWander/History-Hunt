@@ -1,30 +1,16 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-// import LogInScreen from './components/screens/LogInScreen';
-import HomeScreen from './components/screens/HomeScreen';
-// import LogIn from "./components/screens/SignUp";
-import SignUpScreen from "./components/screens/SignUpScreen";
-import LogInScreen from './components/screens/LogInScreen';
-import index from "./components/screens/index";
-// import Invite from "./components/InviteFriends";
+import React from 'react';
+import { LogBox } from 'react-native';
+import RootNavigator from './components/AppNavigator'; 
+import { AuthContextProvider } from './context/authContext';
 
-const Stack = createNativeStackNavigator();
 
 
 export default function App() {
-  return(
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen  options = {{headerShown: false}} name="Signup" component={SignUpScreen} />
-        <Stack.Screen options = {{headerShown: false}} name="Login" component={LogInScreen} />
-        <Stack.Screen name="index" component={index} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  )
+  return (
+    <AuthContextProvider>
+      <RootNavigator />
+    </AuthContextProvider>
+  );
 }
-
-
-
-
 
 

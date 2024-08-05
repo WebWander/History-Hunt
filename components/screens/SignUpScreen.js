@@ -1,125 +1,117 @@
 import React, { useState } from 'react';
-import {  StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert } from 'react-native';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '../../firebaseAuth';
+import { auth } from '../../firebaseConfig';
 import Button from '../ui/Button';
 import { Ionicons } from '@expo/vector-icons';
 
+import { useAuth } from '../../context/authContext';
+import Loading from '../Loading';
 
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-  // const [error, setError] = useState('');
-
-  
+  const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
 
   const handleSignUp = async () => {
-
-    const trimmedEmail = email.trim();
-    const trimmedPassword = password.trim();
-    const trimmedName = name.trim();
-
-
-
-    if (!validateEmail(email)) {
-      Alert.alert('Invalid email format');
+    if (!email || !password || !name) {
+      Alert.alert('Please fill in all fields');
       return;
     }
-    if (!name) {
-      Alert.alert('Name cannot be empty');
-      return;
-    }
+
     if (password.length < 6) {
       Alert.alert('Password must be at least 6 characters');
       return;
     }
 
+    setLoading(true);
+
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, trimmedEmail, trimmedPassword);
-      const user = userCredential.user;
-      await updateProfile(user, { displayName: trimmedName });
-      console.log('Registered with:', user.email);
-
-      setEmail('');
-      setPassword('');
-      setName('');
-      
-
-
+      let response = await register(email, password, name);
+      console.log('User registered:', response);
+      if (response.success) {
+        Alert.alert('Success', 'Account created successfully');
+        navigation.navigate('Login'); // Redirect to Login screen after successful signup
+      } else {
+        Alert.alert('Error', response.msg);
+      }
     } catch (error) {
       console.error('Error signing up:', error.message);
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const validateEmail = (email) => {
-    const re = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-    return re.test(email);
-  };
-
-
-  
-
-  return(
-    <View  style={styles.mainContainer}>
+  return (
+    <View style={styles.mainContainer}>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Login')}>
-        <Ionicons name="arrow-back" size={24} color="black" style={{marginLeft: 20}} />
+        <Ionicons name="arrow-back" size={24} color="black" style={{ marginLeft: 20 }} />
       </TouchableOpacity>
       <View>
-        <Image 
+        <Image
           source={require('../../assets/logo.png')}
-          style={{marginLeft: 190, width: 50, height: 60}}
-          />
+          style={{ marginLeft: 190, width: 50, height: 60 }}
+        />
       </View>
       <View style={styles.container}>
-        <Text style={{fontSize: 30, fontWeight: 500,  color: '#ba55d3', marginBottom: 25}}>History<Text style={{color: '#dda0dd'}}>Hunt</Text></Text>
-        <Text style={{fontSize: 40}}>Profile</Text>
+        <Text style={{ fontSize: 30, fontWeight: 500, color: '#ba55d3', marginBottom: 25 }}>
+          History<Text style={{ color: '#dda0dd' }}>Hunt</Text>
+        </Text>
+        <Text style={{ fontSize: 40 }}>Profile</Text>
       </View>
-      <View style={styles.textInputContainer} >
-        <TextInput 
+      <View style={styles.textInputContainer}>
+        <TextInput
           placeholder='Email'
           value={email}
-          onChangeText={text => setEmail(text)}
+          onChangeText={setEmail}
           style={styles.textInput}
-         />
-         <TextInput 
+        />
+        <TextInput
           placeholder='Name'
           value={name}
-          onChangeText={text => setName(text)}
+          onChangeText={setName}
           style={styles.textInput}
-         />
-        <TextInput  
+        />
+        <TextInput
           placeholder='Password'
           value={password}
-          onChangeText={text => setPassword(text)}
-          style={styles.textInput} />
-          {/* {error ? <Text style={styles.errorText}>{error}</Text> : null} */}
+          onChangeText={setPassword}
+          style={styles.textInput}
+          secureTextEntry
+        />
       </View>
       <View>
-        <Button
-          onPress={handleSignUp}
-        >
-          <Text style={{color: 'white', fontSize: 16, fontWeight: 900}}>SIGNUP</Text>
-        </Button>
+        {loading ? (
+          <View style={{ alignItems: 'center' }}>
+            <Loading/>
+          </View>
+        ) : (
+          <Button onPress={handleSignUp}>
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: '900' }}>CONTINUE</Text>
+          </Button>
+        )}
       </View>
+    
       <View style={styles.note}>
-        <Text style={{fontSize: 13}}>Already have an account?</Text>
+        <Text style={{ fontSize: 13 }}>Already have an account?</Text>
         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={{color: 'blue'}}>Log in here</Text>
+          <Text style={{ color: 'blue' }}>Log in here</Text>
         </TouchableOpacity>
-        
       </View>
       <View style={styles.terms}>
-        <Text style={{fontSize: 12}}>By signing up I accept the <Text style={{textDecorationLine: 'underline'}}>terms of use</Text></Text>
-        <Text style={{marginBottom: 20, fontSize: 12}}>And the <Text style={{textDecorationLine: 'underline'}}>data privacy policy</Text></Text>
+        <Text style={{ fontSize: 12 }}>
+          By signing up I accept the <Text style={{ textDecorationLine: 'underline' }}>terms of use</Text>
+        </Text>
+        <Text style={{ marginBottom: 20, fontSize: 12 }}>
+          And the <Text style={{ textDecorationLine: 'underline' }}>data privacy policy</Text>
+        </Text>
       </View>
-
     </View>
-  )
-  
-
-
-}
+  );
+};
 
 const styles = StyleSheet.create({
   mainContainer: {

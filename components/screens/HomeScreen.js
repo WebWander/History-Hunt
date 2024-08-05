@@ -1,21 +1,19 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import { useNavigation } from '@react-navigation/native';
 import React from 'react'
-import { auth } from '../../firebaseAuth';
+/* import { auth } from '../../firebaseAuth'; */
+import { useAuth } from '../../context/authContext';
+import { auth } from '../../firebaseConfig';
 
 
 const HomeScreen = () => {
-  const navigation = useNavigation()
+  const navigation = useNavigation();
+const { logout } = useAuth();
 
-  // const handleSignOut = () => {
-  //   auth
-  //     .signOut()
-  //     .then(() => {
-  //       navigation.replace("Login")
-  //     })
-  //     .catch(error => alert(error.message))
-  // }
-
+const handleSignOut = async () => {
+  await logout();
+  navigation.navigate('Login');
+}
   return (
     <View style={styles.container}>
       <Text>Email: {auth.currentUser?.email}</Text>

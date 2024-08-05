@@ -1,60 +1,53 @@
-// import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '../../firebaseAuth';
+import { auth } from '../../firebaseConfig';
 
 const LogInScreen = () => {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
 
-  
-
   const handleSignUp = async () => {
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+    const trimmedName = name.trim();
 
+    console.log(`Email: ${trimmedEmail}, Name: ${trimmedName}, Password: ${trimmedPassword}`);
 
-    console.log(`Email: ${email}, Name: ${name}, Password: ${password}`);
-
-    if (!email || !password) {
-      console.error('Email and password are required.');
+    if (!trimmedEmail || !trimmedPassword || !trimmedName) {
+      console.error('Email, name, and password are required.');
       return;
     }
 
     // Simple email format validation
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email)) {
+    if (!emailPattern.test(trimmedEmail)) {
       console.error('Invalid email format.');
       return;
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, trimmedEmail, trimmedPassword);
       const user = userCredential.user;
-      await updateProfile(user, { displayName: name });
-      console.log('Registered with:', user.email);
+
+      if (user) {
+        // Ensure the user object is defined before updating the profile
+        await updateProfile(user, { displayName: trimmedName });
+        console.log('Registered with:', user.email);
+      } else {
+        console.error('User object is undefined.');
+      }
     } catch (error) {
+      // Handle errors here
       console.error('Error signing up:', error.message);
     }
   };
 
-  // const handleLogin = async() => {
-  //   try {
-  //     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  //     const user = userCredential.user;
-  //     console.log('Logged in with:', user.email);
-  //   } catch (error) {
-  //     console.error('Error signing up:', error.message);
-  //   }
-  // }
-
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior='padding'
-    >
+    <KeyboardAvoidingView style={styles.container} behavior='padding'>
       <View style={styles.heading}>
-        <Text style={{fontSize: 20}}>Profile</Text>
+        <Text style={{ fontSize: 20 }}>Profile</Text>
       </View>
       <View style={styles.inputContainer}>
         <TextInput 
@@ -74,23 +67,13 @@ const LogInScreen = () => {
           value={password}
           onChangeText={text => setPassword(text)}
           style={styles.input}
-          
+          secureTextEntry
         />
       </View>
-
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          onPress={handleSignUp}
-          style={[styles.button, styles.buttonOutline]}
-        >
+        <TouchableOpacity onPress={handleSignUp} style={[styles.button, styles.buttonOutline]}>
           <Text style={styles.buttonOutlineText}>SIGN UP</Text>
         </TouchableOpacity>
-        {/* <TouchableOpacity
-          onPress={handleLogin}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity> */}
       </View>
     </KeyboardAvoidingView>
   );
@@ -128,10 +111,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  buttonText: {
-    color: 'white',
-    fontWeight: '700',
-  },
   buttonOutline: {
     marginTop: 5,
     borderWidth: 2,
@@ -147,5 +126,5 @@ const styles = StyleSheet.create({
   },
   heading: {
     marginTop: 5,
-  }
+  },
 });

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "573147574767",
+    "project_id": "history-hunt1",
+    "storage_bucket": "history-hunt1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:573147574767:android:0e8c95223aa81ea34ec61a",
+        "android_client_info": {
+          "package_name": "history.hunt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRJdyt4HOX57yjFTNp5nmJsW1nV4CF8Aw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
