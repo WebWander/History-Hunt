@@ -1,23 +1,38 @@
-import React from 'react'
-import { View, StyleSheet, SafeAreaView, TextInput } from 'react-native';
+import React from 'react';
+import { View, TextInput, StyleSheet } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome'; // You can use any icon library
 
-export default function Search() {
-    return (
-      <SafeAreaView>
-        <TextInput placeholder='Search' autoCapitalize='none' autoCorrect={false} inlineImageLeft='search_icon' style={styles.searchBox} />
-      </SafeAreaView>
-    );
-
-    
-  
-}
+const SearchInput = () => {
+  return (
+    <View style={styles.container}>
+      <TextInput
+        style={styles.input}
+        placeholder="Search"
+        placeholderTextColor="#aaa"
+      />
+      <Icon name="search" size={20} color="#aaa" style={styles.icon} />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  searchBox: {
-    padding: 10,
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderColor: '#ccc',
     borderWidth: 1,
-    marginLeft: 50,
-    marginRight: 50,
-  }
-})
+    padding: 10,
+    backgroundColor: 'transparent',
+    marginLeft : 50,
+    marginRight : 50,
+  },
+  input: {
+    flex: 1,
+    paddingLeft: 5,
+  },
+  icon: {
+    marginLeft: 10,
+  },
+});
+
+export default SearchInput;

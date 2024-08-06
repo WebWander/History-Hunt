@@ -63,7 +63,7 @@ const SignUpScreen = ({ navigation }) => {
   return(
     <View  style={styles.mainContainer}>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Login')}>
-        <Ionicons name="arrow-back" size={24} color="black" style={{marginLeft: 20}} />
+        <Ionicons name="arrow-back" size={24} color="blue" style={{marginLeft: 20}} />
       </TouchableOpacity>
       <View>
         <Image 

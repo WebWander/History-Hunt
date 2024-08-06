@@ -23,16 +23,15 @@ export default Button;
 
 const styles = StyleSheet.create({
   button: {
+    position: 'absolute',
+    bottom: 120,
+    left: 60, 
+    right: 60, 
     alignItems: 'center',
-    backgroundColor: '#007AFF', // Customize the button color
+    backgroundColor: '#007AFF',
     borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 5,
-    marginLeft: 60,
-    marginRight: 60,
-    marginBottom: 30,
-    
-    
   },
 });
 
