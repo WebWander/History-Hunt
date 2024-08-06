@@ -7,6 +7,7 @@ import LogInScreen from './screens/LogInScreen';
 import SignUpScreen from './screens/SignUpScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import CustomizeScreen from './screens/CustomizeScreen';
+import InviteFriends from './invite/InviteFriends';
 /* import StartPage from './screens'; */
 import HomeScreen from './screens/HomeScreen';
 
@@ -50,6 +51,7 @@ const AppNavigator = () => {
       <Stack.Screen name="Signup" component={SignUpScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Customize" component={CustomizeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Invite" component={InviteFriends} options={{ headerShown: false }} />
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       
     </Stack.Navigator>

@@ -15,7 +15,7 @@ const ProfileImageModal = ({ visible, onClose, onPickImage, onTakePhoto }) => {
           <TouchableWithoutFeedback onPress={() => {}}>
             <View className="w-72 p-5 bg-white rounded-xl">
               <TouchableOpacity 
-                className="absolute right-10 top-1 p-3"
+                className="absolute right- top-1 p-3"
                 onPress={onClose}
               >
                 <Ionicons name="close" size={30} color="rgba(255,165,0, 0.7)" />

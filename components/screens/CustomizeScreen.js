@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StatusBar, Image } from 'react-native';
+import { Text, TextInput, TouchableOpacity, StatusBar, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,11 +7,13 @@ import * as ImagePicker from 'expo-image-picker';
 import { auth, db } from '../../firebaseConfig';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { addDoc, collection } from 'firebase/firestore';
+import PropTypes from 'prop-types';
 
 const CustomizeScreen = ({ navigation }) => {
   const [title, setTitle] = useState('');
   const [duration, setDuration] = useState('');
   const [imageUri, setImageUri] = useState(null);
+  const [huntId, setHuntId] = useState(null);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -40,14 +42,17 @@ const CustomizeScreen = ({ navigation }) => {
       await uploadBytes(refPath, blob);
       const downloadURL = await getDownloadURL(refPath);
 
-      await addDoc(collection(db, 'hunts'), {
+      const docRef = await addDoc(collection(db, 'hunts'), {
         title,
         duration,
         imageUrl: downloadURL,
-        userId: auth.currentUser.uid
+        userId: auth.currentUser.uid,
+        friends: []
       });
 
-      navigation.navigate('Profile');
+      setHuntId(docRef.id);
+      navigation.navigate('Invite', { huntId: docRef.id });
+
     } catch (error) {
       alert('Error saving hunt: ' + error.message);
     }
@@ -104,4 +109,14 @@ const CustomizeScreen = ({ navigation }) => {
   );
 };
 
+
+CustomizeScreen.propTypes = {
+   
+      huntId: PropTypes.string.isRequired,
+   
+  navigation: PropTypes.shape({
+    goBack: PropTypes.func.isRequired,
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
 export default CustomizeScreen;

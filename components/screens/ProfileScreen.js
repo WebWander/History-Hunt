@@ -173,7 +173,7 @@ const ProfileScreen = ({ navigation }) => {
               <Image source={{ uri: hunt.imageUrl }} style={{ width: 40, height: 40, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 100, padding: 5, marginRight: 10 }} />
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{hunt.title}</Text>
-                <Text style={{ color: 'gray' }}>{hunt.duration}</Text>
+                <Text style={{ color: 'gray' }}> With: {hunt.friends.join(',')}</Text>
               </View>
             </View>
           ))}
