@@ -53,7 +53,10 @@ const InviteFriends = () => {
         ))}
         
       </View>
-      <Button>
+      <Button 
+        onPress={() => console.log('Button Pressed')}
+        style={styles.customButton}
+      >
           <Text style={{color: 'white', fontSize: 16, fontWeight: 900 }}>INVITE</Text>
       </Button>
 
@@ -98,6 +101,19 @@ const styles = StyleSheet.create({
   avatar: {
     backgroundColor: '#ccc',
   },
+  customButton: {
+    position: 'absolute',
+    bottom: 80, 
+    left: 60, 
+    right: 60, 
+    alignItems: 'center',
+    backgroundColor: '#007AFF',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+  },
+  
+  
   
   
   
