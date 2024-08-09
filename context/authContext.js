@@ -43,11 +43,20 @@ export const AuthContextProvider = ({ children }) => {
             setUser(userData);
             return { success: true, data: response.user };
         } catch (error) {
-            let msg = error.message;
-            if (msg.includes('(auth/email-already-in-use)')) msg = 'Email already in use';
-            else if (msg.includes('(auth/invalid-email)')) msg = 'Invalid email';
-            else if (msg.includes('(auth/weak-password)')) msg = 'Password should be at least 6 characters';
-            else msg = 'An error occurred. Please try again later.';
+            let msg;
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    msg = 'Email already in use';
+                    break;
+                case 'auth/invalid-email':
+                    msg = 'Invalid email';
+                    break;
+                case 'auth/weak-password':
+                    msg = 'Password should be at least 6 characters';
+                    break;
+                default:
+                    msg = 'An error occurred. Please try again later.';
+            }
             return { success: false, msg };
         }
     };
@@ -60,9 +69,19 @@ export const AuthContextProvider = ({ children }) => {
             return { success: true };
         } catch (error) {
             let msg = error.message;
-            if (msg.includes('(auth/invalid-credentials)')) msg = 'Invalid credentials';
-            else if (msg.includes('(auth/invalid-email)')) msg = 'Invalid email';
-            else msg = 'An error occurred. Please try again later.';
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    msg = 'Email already in use';
+                    break;
+                case 'auth/invalid-email':
+                    msg = 'Invalid email';
+                    break;
+                case 'auth/weak-password':
+                    msg = 'Password should be at least 6 characters';
+                    break;
+                default:
+                    msg = 'An error occurred. Please try again later.';
+            }
             return { success: false, msg };
         }
     };

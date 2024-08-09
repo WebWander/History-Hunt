@@ -14,6 +14,15 @@ const LogInScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
+
+    const trimmedEmail = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/; // More lenient regex
+    if (!emailRegex.test(trimmedEmail)) {
+        Alert.alert('Please enter a valid email address');
+        return;
+    }
+
+
     if (!email || !password) {
       Alert.alert('Please fill in all fields');
       return;
@@ -23,7 +32,7 @@ const LogInScreen = ({ navigation }) => {
 
   
     try {
-      const response = await login(email, password);
+      const response = await login(trimmedEmail, password);
       console.log('User logged in:', response);
       if (response.success) {
         Alert.alert('Success', 'User logged in successfully');

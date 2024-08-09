@@ -59,9 +59,10 @@ const AppNavigator = () => {
 };
 
 export default function RootNavigator() {
+  const navigationRef = useRef(null);
   return (
     <AuthContextProvider>
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef}>
         <AppNavigator />
       </NavigationContainer>
     </AuthContextProvider>

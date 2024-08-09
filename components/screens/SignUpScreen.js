@@ -21,6 +21,13 @@ const SignUpScreen = ({ navigation }) => {
       return;
     }
 
+    const trimmedEmail = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/; // More lenient regex
+    if (!emailRegex.test(trimmedEmail)) {
+        Alert.alert('Please enter a valid email address');
+        return;
+    }
+
     if (password.length < 6) {
       Alert.alert('Password must be at least 6 characters');
       return;
@@ -29,7 +36,7 @@ const SignUpScreen = ({ navigation }) => {
     setLoading(true);
 
     try {
-      let response = await register(email, password, name);
+      let response = await register(trimmedEmail, password, name);
       console.log('User registered:', response);
       if (response.success) {
         Alert.alert('Success', 'Account created successfully');
@@ -90,7 +97,7 @@ const SignUpScreen = ({ navigation }) => {
           </View>
         ) : (
           <Button onPress={handleSignUp}>
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: '900' }}>CONTINUE</Text>
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: '900' }}>SIGN UP</Text>
           </Button>
         )}
       </View>
