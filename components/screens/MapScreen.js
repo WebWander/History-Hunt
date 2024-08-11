@@ -2,17 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { db } from '../../firebaseConfig';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { db, auth } from '../../firebaseConfig';
+import {  addDoc, collection } from 'firebase/firestore';
 import PropTypes from 'prop-types';
 import { useAuth } from '../../context/authContext';
 import * as Location from 'expo-location';
 import HistoryHuntImage from '../../assets/letter.jpg';
 import { Ionicons } from '@expo/vector-icons';
+import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 
 const MapScreen = ({ route, navigation }) => {
-  const { huntId } = route.params;
-  const {user} = useAuth();
+  const { huntData } = route.params;
+  const { user } = useAuth();
   const [markers, setMarkers] = useState([]);
   const [region, setRegion] = useState({
     latitude: 57.7089, // Default to Gothenburg coordinates
@@ -31,57 +32,48 @@ const MapScreen = ({ route, navigation }) => {
     let location = await Location.getCurrentPositionAsync({});
     const { latitude, longitude } = location.coords;
     setRegion({ 
-        latitude,
-        longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      });
+      latitude,
+      longitude,
+      latitudeDelta: 0.0922,
+      longitudeDelta: 0.0421,
+    });
   };
 
   useEffect(() => {
-    fetchMarkers();
     getCurrentLocation();
   }, []);
 
-  const fetchMarkers = async () => {
-    const huntDoc = await getDoc(doc(db, 'hunts', huntId));
-    if (huntDoc.exists()) {
-      setMarkers(huntDoc.data().markers);
-    }
-  };
-
-
-/*   useEffect(() => {
-    const fetchMarkers = async () => {
-      try {
-        const huntDoc = await getDoc(doc(db, 'hunts', huntId));
-        if (huntDoc.exists()) {
-          const huntData = huntDoc.data();
-          setMarkers(huntData.markers || []); 
-        } else {
-          console.error('No such document!');
-        }
-      } catch (error) {
-        console.error('Error getting document:', error);
-      }
-    };
-
-    fetchMarkers();
-  }, [huntId]);
- */
   const handleMapPress = (event) => {
     const newMarker = {
       coordinate: event.nativeEvent.coordinate,
-      title: `Marker ${markers.length + 1}`
+      title: `Marker ${markers.length + 1}`,
     };
     setMarkers([...markers, newMarker]);
   };
 
   const handleSaveMarkers = async () => {
+    if (markers.length === 0) {
+      Alert.alert('Error', 'Please add at least one marker.');
+      return;
+    }
+
     try {
-      const huntRef = doc(db, 'hunts', huntId);
-      await updateDoc(huntRef, { markers });
-      Alert.alert('Success', 'Markers have been saved!');
+      const response = await fetch(huntData.imageUri);
+      const blob = await response.blob();
+      const storage = getStorage();
+      const refPath = ref(storage, `hunt_images/${auth.currentUser.uid}_${Date.now()}.jpg`);
+      await uploadBytes(refPath, blob);
+      const downloadURL = await getDownloadURL(refPath);
+
+      // Save hunt data with image URL
+      await addDoc(collection(db, 'hunts'), {
+        ...huntData,
+        imageUrl: downloadURL, // Store the image URL in Firestore
+        userId: auth.currentUser.uid,
+        markers: markers,
+      });
+
+      Alert.alert('Success', 'Hunt has been saved!');
       navigation.navigate('Profile');
     } catch (error) {
       alert('Error saving markers: ' + error.message);
@@ -90,7 +82,7 @@ const MapScreen = ({ route, navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 relative">
-         <TouchableOpacity className="flex-row items-center mb-6" onPress={() => navigation.goBack()}>
+      <TouchableOpacity className="flex-row items-center mb-6" onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={32} color="#0951E2" />
       </TouchableOpacity>
 
@@ -135,11 +127,12 @@ const MapScreen = ({ route, navigation }) => {
 MapScreen.propTypes = {
   route: PropTypes.shape({
     params: PropTypes.shape({
-      huntId: PropTypes.string.isRequired,
+      huntData: PropTypes.object.isRequired, // Should be an object, not a string
     }).isRequired,
   }).isRequired,
   navigation: PropTypes.shape({
     navigate: PropTypes.func.isRequired,
+    goBack: PropTypes.func.isRequired,
   }).isRequired,
 };
 

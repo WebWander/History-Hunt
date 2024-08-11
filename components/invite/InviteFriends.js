@@ -3,13 +3,13 @@ import { Text, FlatList, TouchableOpacity, Alert, Image, View, TextInput } from 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Contacts from 'expo-contacts';
-import { db } from '../../firebaseConfig';
-import { doc, updateDoc } from 'firebase/firestore';
+/* import { db } from '../../firebaseConfig';
+import { doc, updateDoc } from 'firebase/firestore'; */
 import { LinearGradient } from 'expo-linear-gradient';
 import PropTypes from 'prop-types';
 
 const InviteFriends = ({ route, navigation }) => {
-  const { huntId } = route.params;
+  const { huntData } = route.params;
   const [contacts, setContacts] = useState([]);
   const [filteredContacts, setFilteredContacts] = useState([]);
   const [selectedContacts, setSelectedContacts] = useState([]);
@@ -56,12 +56,12 @@ const InviteFriends = ({ route, navigation }) => {
   const handleInvite = async () => {
     try {
       const friends = selectedContacts.map(contact => contact.name);
-      const huntRef = doc(db, 'hunts', huntId);
-      await updateDoc(huntRef, { friends: friends });
-
-
+    
+      const updatedHuntData = { ...huntData, friends };
+        
       Alert.alert('Success', 'Friends have been invited!');
-      navigation.navigate('Map', { huntId});
+      navigation.navigate('Map', { huntData: updatedHuntData });
+      
     } catch (error) {
       alert('Error inviting friends: ' + error.message);
     }
@@ -132,7 +132,7 @@ const InviteFriends = ({ route, navigation }) => {
 InviteFriends.propTypes = {
   route: PropTypes.shape({
     params: PropTypes.shape({
-      huntId: PropTypes.string.isRequired,
+      huntData: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
   navigation: PropTypes.shape({

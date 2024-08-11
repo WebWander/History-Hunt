@@ -4,16 +4,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { auth, db } from '../../firebaseConfig';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { addDoc, collection } from 'firebase/firestore';
 import PropTypes from 'prop-types';
 
 const CustomizeScreen = ({ navigation }) => {
   const [title, setTitle] = useState('');
   const [duration, setDuration] = useState('');
   const [imageUri, setImageUri] = useState(null);
-  const [huntId, setHuntId] = useState(null);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -28,35 +24,19 @@ const CustomizeScreen = ({ navigation }) => {
     }
   };
 
-  const saveHunt = async () => {
+  const handleContinue = () => {
     if (!title || !duration || !imageUri) {
       alert('Please fill out all fields and select an image.');
       return;
     }
 
-    try {
-      const response = await fetch(imageUri);
-      const blob = await response.blob();
-      const storage = getStorage();
-      const refPath = ref(storage, `hunt_images/${auth.currentUser.uid}_${Date.now()}.jpg`);
-      await uploadBytes(refPath, blob);
-      const downloadURL = await getDownloadURL(refPath);
+    const huntData = {
+      title,
+      duration,
+      imageUri,
+    };
 
-      const docRef = await addDoc(collection(db, 'hunts'), {
-        title,
-        duration,
-        imageUrl: downloadURL,
-        userId: auth.currentUser.uid,
-        friends: [],
-        markers: []
-      });
-
-      setHuntId(docRef.id);
-      navigation.navigate('Invite', { huntId: docRef.id });
-
-    } catch (error) {
-      alert('Error saving hunt: ' + error.message);
-    }
+    navigation.navigate('Invite', { huntData });
   };
 
   return (
@@ -94,7 +74,7 @@ const CustomizeScreen = ({ navigation }) => {
         )}
       </TouchableOpacity>
 
-      <TouchableOpacity className="w-64 self-center" onPress={saveHunt}>
+      <TouchableOpacity className="w-64 self-center" onPress={handleContinue}>
         <LinearGradient
           colors={['#0951E2', '#BE3CFB']}
           className="rounded-full py-4 items-center"
@@ -110,14 +90,11 @@ const CustomizeScreen = ({ navigation }) => {
   );
 };
 
-
 CustomizeScreen.propTypes = {
-   
-      huntId: PropTypes.string.isRequired,
-   
   navigation: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
     navigate: PropTypes.func.isRequired,
   }).isRequired,
 };
+
 export default CustomizeScreen;
