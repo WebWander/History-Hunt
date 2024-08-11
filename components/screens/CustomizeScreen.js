@@ -47,7 +47,8 @@ const CustomizeScreen = ({ navigation }) => {
         duration,
         imageUrl: downloadURL,
         userId: auth.currentUser.uid,
-        friends: []
+        friends: [],
+        markers: []
       });
 
       setHuntId(docRef.id);
@@ -60,7 +61,7 @@ const CustomizeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white px-6">
-      <TouchableOpacity className="flex-row items-center mb-6" onPress={() => navigation.navigate('Profile')}>
+      <TouchableOpacity className="flex-row items-center mb-6" onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={32} color="#0951E2" />
       </TouchableOpacity>
 

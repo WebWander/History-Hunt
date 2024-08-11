@@ -1,13 +1,14 @@
-import React, { useEffect, useContext, useRef } from 'react';
+import React, { useEffect,  useRef } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { AuthContext, AuthContextProvider, useAuth } from '../context/authContext';
+import {AuthContextProvider, useAuth } from '../context/authContext';
 
 import LogInScreen from './screens/LogInScreen';
 import SignUpScreen from './screens/SignUpScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import CustomizeScreen from './screens/CustomizeScreen';
 import InviteFriends from './invite/InviteFriends';
+import MapScreen from './screens/MapScreen';
 /* import StartPage from './screens'; */
 import HomeScreen from './screens/HomeScreen';
 
@@ -52,6 +53,7 @@ const AppNavigator = () => {
       <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Customize" component={CustomizeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Invite" component={InviteFriends} options={{ headerShown: false }} />
+      <Stack.Screen name="Map" component={MapScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       
     </Stack.Navigator>

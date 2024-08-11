@@ -61,7 +61,7 @@ const InviteFriends = ({ route, navigation }) => {
 
 
       Alert.alert('Success', 'Friends have been invited!');
-      navigation.navigate('Profile');
+      navigation.navigate('Map', { huntId});
     } catch (error) {
       alert('Error inviting friends: ' + error.message);
     }
@@ -90,9 +90,10 @@ const InviteFriends = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-      <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }} onPress={() => navigation.goBack()}>
+      <TouchableOpacity className="flex-row items-center mb-6" onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={32} color="#0951E2" />
       </TouchableOpacity>
+
 
       <Text style={{ fontSize: 40, fontWeight: '600', textAlign: 'center', marginBottom: 8 }}>Invite Friends</Text>
 

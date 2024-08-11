@@ -11,6 +11,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '../../context/authContext';
 import RefreshControlComponent from '../Loading';
+import PropTypes  from 'prop-types';
 
 const ProfileScreen = ({ navigation }) => {
   const { user } = useAuth();
@@ -153,7 +154,7 @@ const ProfileScreen = ({ navigation }) => {
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 20 }}>
             <Image source={{ uri: 'https://example.com/image1.jpg' }} style={{ width: 40, height: 40, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 100, padding: 5, marginRight: 10 }} />
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Women's Rights in New York City</Text>
+              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Womens Rights in New York City</Text>
               <Text style={{ color: 'gray' }}>Soloing it!</Text>
             </View>
           </View>
@@ -200,5 +201,17 @@ const ProfileScreen = ({ navigation }) => {
     </SafeAreaView>
   );
 }
+
+ProfileScreen.propTypes = {
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      huntId: PropTypes.string.isRequired,
+    }).isRequired,
+  }).isRequired,
+  navigation: PropTypes.shape({
+    goBack: PropTypes.func.isRequired,
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default ProfileScreen;

@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../firebaseConfig";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
+
 export const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
