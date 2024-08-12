@@ -9,12 +9,13 @@ import { db } from "../../firebaseConfig";
 
 const InviteFriends = ({ navigation }) => {
   const [users, setUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
       const usersCollection = collection(db, 'users');
       const userSnapshot = await getDocs(usersCollection);
-      const userList = userSnapshot.docs.map(doc => doc.data());
+      const userList = userSnapshot.docs.map(doc => ({ userId: doc.id, ...doc.data() }));
       const uniqueUserList = Array.from(new Set(userList.map(user => user.userId)))
         .map(id => userList.find(user => user.userId === id));
       setUsers(uniqueUserList);
@@ -23,7 +24,7 @@ const InviteFriends = ({ navigation }) => {
     fetchUsers();
   }, []);
 
-  const organizeUsers = (users) => {
+  const organizeUsers = (users, selectedUsers) => {
     const sections = users.reduce((acc, user) => {
       const firstLetter = user.username.charAt(0).toUpperCase();
       if (!acc[firstLetter]) {
@@ -33,23 +34,50 @@ const InviteFriends = ({ navigation }) => {
       return acc;
     }, {});
   
-    return Object.values(sections).sort((a, b) => a.title.localeCompare(b.title));
-  };
-  
-  const organizedUsers = organizeUsers(users);
+    const selectedUsernames = users
+      .filter(user => selectedUsers.includes(user.userId))
+      .map(user => user.username);
 
-  const renderGridItem = ({ item }) => (
-    <View style={styles.avatarItem}>
-      <Avatar
-        size={50}
-        rounded
-        containerStyle={[styles.avatar, { backgroundColor: '#ccc' }]}
-        icon={{ name: 'user', type: 'font-awesome', color: '#808080' }}
-        source={{ uri: item.profileImageUrl || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png' }}
-      />
-      <Text>{item.username}</Text>
-    </View>
-  );
+    return {
+      selectedUsernames,
+      sections: Object.values(sections).sort((a, b) => a.title.localeCompare(b.title))
+    };
+  };
+
+  const { selectedUsernames, sections } = organizeUsers(users, selectedUsers);
+
+  const handleAvatarPress = (userId) => {
+    setSelectedUsers((prevSelectedUsers) => {
+      if (prevSelectedUsers.includes(userId)) {
+        return prevSelectedUsers.filter(id => id !== userId);
+      } else {
+        return [...prevSelectedUsers, userId];
+      }
+    });
+  };
+
+  const renderGridItem = ({ item }) => {
+    const isSelected = selectedUsers.includes(item.userId);
+
+    return (
+      <TouchableOpacity onPress={() => handleAvatarPress(item.userId)}>
+        <View style={styles.avatarItem}>
+          <Avatar
+            size={50}
+            rounded
+            containerStyle={[
+              styles.avatar,
+              isSelected ? styles.selectedAvatar : { backgroundColor: '#ccc' }
+            ]}
+            icon={{ name: isSelected ? 'check' : 'user', type: 'font-awesome', color: isSelected ? 'white' : '#808080' }}
+            overlayContainerStyle={{ backgroundColor: isSelected ? 'green' : '#ccc' }}
+            source={{ uri: item.profileImageUrl || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png' }}
+          />
+          <Text>{item.username}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderSection = ({ section }) => (
     <View>
@@ -73,8 +101,16 @@ const InviteFriends = ({ navigation }) => {
       </View>
       <Search  />
 
+      {selectedUsernames.length > 0 && (
+        <View style={styles.selectedUserContainer}>
+          {selectedUsernames.map(username => (
+            <Text key={username} style={styles.selectedUserText}>{username}</Text>
+          ))}
+        </View>
+      )}
+
       <SectionList
-        sections={organizedUsers}
+        sections={sections}
         keyExtractor={(item, index) => item.userId + index}
         renderItem={({ item }) => null} 
         renderSectionHeader={renderSection}
@@ -97,7 +133,6 @@ const styles = StyleSheet.create({
   mainContainer: {
     marginTop: 40,
     flex: 1,
-    
   },
   headingText: {
     fontSize: 40,
@@ -116,11 +151,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc', 
     borderRadius: 25, 
     marginLeft: 20,
-    
   },
   avatar: {
-    backgroundColor: '#ccc', // Consistent color with avatarItem
-   
+    backgroundColor: '#ccc',
+  },
+  selectedAvatar: {
+    backgroundColor: 'green',
   },
   customButton: {
     position: 'absolute',
@@ -143,6 +179,21 @@ const styles = StyleSheet.create({
   },
   sectionListContent: {
     paddingHorizontal: 20,
-    
+  },
+  selectedUserContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: 20,
+    marginVertical: 10,
+  },
+  selectedUserText: {
+    backgroundColor: 'forestgreen',
+    color: 'white',
+    borderRadius: 10,
+    paddingLeft: 10,
+    paddingRight: 10,
+    padding: 5,
+    marginRight: 5,
+    marginBottom: 5,
   },
 });
