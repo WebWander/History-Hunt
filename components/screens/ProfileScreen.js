@@ -1,7 +1,5 @@
-
-
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, StatusBar, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProfileImageModal from './UploadPhotoModal';
@@ -10,21 +8,25 @@ import { auth, db } from '../../firebaseConfig';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '../../context/authContext';
-import RefreshControlComponent from '../Loading';
 
 const ProfileScreen = ({ navigation }) => {
-  const { user } = useAuth();
-  const [profileImage, setProfileImage] = useState(user?.profileImageUrl || 'https://example.com/profile.jpg');
+  const { user: authUser } = useAuth();
+  const [user, setUser] = useState(authUser);
+  const [profileImage, setProfileImage] = useState(authUser?.profileImageUrl || 'https://example.com/profile.jpg');
   const [modalVisible, setModalVisible] = useState(false);
   const [hunts, setHunts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (user && user.profileImageUrl) {
-      setProfileImage(user.profileImageUrl);
+    console.log('ProfileScreen useEffect - authUser:', authUser);
+    if (authUser) {
+      setUser(authUser);
+      if (authUser.profileImageUrl) {
+        setProfileImage(authUser.profileImageUrl);
+      }
+      fetchHunts();
     }
-    fetchHunts();
-  }, [user]);
+  }, [authUser]);
 
   const fetchHunts = async () => {
     if (!user) return;
@@ -38,7 +40,6 @@ const ProfileScreen = ({ navigation }) => {
     setRefreshing(true);
     fetchHunts().then(() => setRefreshing(false));
   };
-
 
   const pickImage = async () => {
     try {
@@ -95,20 +96,31 @@ const ProfileScreen = ({ navigation }) => {
 
   const updateProfileImage = async (downloadURL) => {
     const userRef = doc(db, 'users', auth.currentUser.uid);
-    await updateDoc(userRef, { profileImageUrl: downloadURL });
+    await updateDoc(userRef, { 
+      profileImageUrl: downloadURL || "",
+      pushToken: authUser.pushToken || ""
+
+    });
     console.log('Profile image URL updated');
   };
-
   const handlePress = () => {
     setModalVisible(true);
   };
 
+  if (!user) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-       <ScrollView
+      <ScrollView
         style={{ flex: 1, padding: 20 }}
         refreshControl={
-          <RefreshControlComponent refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
         <TouchableOpacity style={{ position: 'absolute', top: 10, left: 10 }} onPress={() => console.log('Close')}>

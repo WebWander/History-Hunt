@@ -14,6 +14,7 @@ export const AuthContextProvider = ({ children }) => {
             if (user) {
                 setIsAuthenticated(true);
                 const userData = await fetchUserData(user.uid);
+                console.log('Fetched user data:', userData); 
                 setUser(userData);
             } else {
                 setIsAuthenticated(false);
@@ -27,7 +28,13 @@ export const AuthContextProvider = ({ children }) => {
         const docRef = doc(db, 'users', userId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-            return { ...docSnap.data(), uid: userId };
+            const data = docSnap.data();
+            return {
+                ...data,
+                uid: userId,
+                profileImageUrl: data.profileImageUrl || '', 
+                pushToken: data.pushToken || '' 
+            };
         }
         return null;
     };
@@ -60,6 +67,7 @@ export const AuthContextProvider = ({ children }) => {
             return { success: false, msg };
         }
     };
+
 
     const login = async (email, password) => {
         try {

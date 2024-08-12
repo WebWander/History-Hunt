@@ -11,9 +11,9 @@ import { PushNotificationProvider } from './components/PushNotificationsProvider
 export default function App() {
   return (
     <AuthContextProvider>
-   <PushNotificationProvider>
-    <RootNavigator/>
-   </PushNotificationProvider>
+      <PushNotificationProvider>
+        <RootNavigator/>
+      </PushNotificationProvider>
   </AuthContextProvider>
   );
 }

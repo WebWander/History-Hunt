@@ -21,9 +21,11 @@ const AppNavigator = () => {
   const navigationRef = useRef();
 
   useEffect(() => {
+    console.log('Authentication state changed:', isAuthenticated);
     if (typeof isAuthenticated === 'undefined') return;
 
-    // Handle navigation based on authentication status
+    
+    
     if (isAuthenticated) {
       // If authenticated, ensure user is on a protected route
       if (navigationRef.current && navigationRef.current.getCurrentRoute().name !== 'Profile') {
@@ -33,7 +35,6 @@ const AppNavigator = () => {
         });
       }
     } else {
-      // If not authenticated, redirect to sign-in
       if (navigationRef.current && navigationRef.current.getCurrentRoute().name !== 'Login') {
         navigationRef.current.reset({
           index: 0,
@@ -41,28 +42,26 @@ const AppNavigator = () => {
         });
       }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated]); 
 
   return (
-    <Stack.Navigator initialRouteName="Login">
-        
-     {/*  <Stack.Screen name="index" component={StartPage} options={{ headerShown: false }} /> */}
-      <Stack.Screen name="Login" component={LogInScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Signup" component={SignUpScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Customize" component={CustomizeScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Invite" component={InviteFriends} options={{ headerShown: false }} />
-      <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      
-    </Stack.Navigator>
-  );
+   
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={LogInScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Signup" component={SignUpScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Customize" component={CustomizeScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Invite" component={InviteFriends} options={{ headerShown: false }} />
+        <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+      </Stack.Navigator>
+  )
 };
 
 export default function RootNavigator() {
-  const navigationRef = useRef(null);
+  
   return (
     <AuthContextProvider>
-      <NavigationContainer ref={navigationRef}>
+      <NavigationContainer>
         <AppNavigator />
       </NavigationContainer>
     </AuthContextProvider>

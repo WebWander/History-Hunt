@@ -1,7 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-function Button({ children, onPress }) {
+function Button({ children, onPress, style }) {
   return (
     <Pressable
      
@@ -11,9 +11,9 @@ function Button({ children, onPress }) {
               start={{ x: 0, y: 0.5 }}
               end={{ x: 1, y: 0.5 }}
               colors={['#1C3AFA', '#9B3DFD', '#B73FFC']}
-              style={styles.button}
+              style={StyleSheet.flatten([styles.button, style])}
             >
-        <Text style={styles.buttonText}>{children}</Text>
+        <Text>{children}</Text>
       </LinearGradient>
     </Pressable>
   );
@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#007AFF', // Customize the button color
     borderRadius: 20,
-    paddingVertical: 5,
+    paddingVertical: 10,
     paddingHorizontal: 5,
     marginLeft: 60,
     marginRight: 60,
@@ -35,4 +35,3 @@ const styles = StyleSheet.create({
     
   },
 });
-
