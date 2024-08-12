@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, TextInput, TouchableOpacity, StatusBar, Image } from 'react-native';
+import { Text, TextInput, TouchableOpacity, StatusBar, Image, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,9 +41,15 @@ const CustomizeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white px-6">
-      <TouchableOpacity className="flex-row items-center mb-6" onPress={() => navigation.goBack()}>
-        <Ionicons name="arrow-back" size={32} color="#0951E2" />
-      </TouchableOpacity>
+      <View className="flex-row justify-between mb-6">
+  <TouchableOpacity onPress={() => navigation.goBack()}>
+    <Ionicons name="arrow-back" size={32} color="#0951E2" />
+  </TouchableOpacity>
+
+  <TouchableOpacity onPress={() => navigation.navigate('Invite')}>
+    <Ionicons name="arrow-forward" size={32} color="#0951E2" />
+  </TouchableOpacity>
+</View>
 
       <Text className="text-5xl font-semibold text-black text-center mb-8">Customize</Text>
 
@@ -93,6 +99,7 @@ const CustomizeScreen = ({ navigation }) => {
 CustomizeScreen.propTypes = {
   navigation: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
+    goForward: PropTypes.func.isRequired,
     navigate: PropTypes.func.isRequired,
   }).isRequired,
 };

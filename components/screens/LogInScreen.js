@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert } from 'react-native';
 import  Button  from '../ui/Button';
-import  Loading  from '../Loading';
+/* import  Loading  from '../Loading'; */
 import { useAuth } from '../../context/authContext';
 
 
 const LogInScreen = ({ navigation }) => {
-  const [loading, setLoading] = useState(false);
+/*   const [loading, setLoading] = useState(false); */
   const { login} = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,7 +17,7 @@ const LogInScreen = ({ navigation }) => {
       return;
     }
 
-    setLoading(true);
+   /*  setLoading(true); */
 
   
     try {
@@ -33,7 +33,7 @@ const LogInScreen = ({ navigation }) => {
       console.error('Error  logging in:', error.message);
       Alert.alert('Error', error.message);
     } finally {
-      setLoading(false);
+     /*  setLoading(false); */
     }
   
   };
@@ -68,15 +68,15 @@ const LogInScreen = ({ navigation }) => {
         />
       </View>
       <View>
-        {loading ? (
+     {/*    {loading ? (
           <View style={{ alignItems: 'center' }}>
             <Loading />
           </View>
-        ) : (
+        ) : ( */}
           <Button onPress={handleLogin}>
             <Text style={{ color: 'white', fontSize: 16, fontWeight: '900' }}>CONTINUE</Text>
           </Button>
-        )}
+      {/*   )} */}
       </View>
       <View style={styles.note}>
         <Text style={{ fontSize: 13 }}>Need to make an account?</Text>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import { SafeAreaView } from 'react-native-safe-area-context';
+/* import { SafeAreaView } from 'react-native-safe-area-context'; */
 import { db, auth } from '../../firebaseConfig';
 import {  addDoc, collection } from 'firebase/firestore';
 import PropTypes from 'prop-types';
@@ -10,9 +10,10 @@ import * as Location from 'expo-location';
 import HistoryHuntImage from '../../assets/letter.jpg';
 import { Ionicons } from '@expo/vector-icons';
 import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
+import { customMapStyle } from '../ui/mapStyle';
 
 const MapScreen = ({ route, navigation }) => {
-  const { huntData } = route.params;
+  const { huntData } = route.params || { huntData: { title: 'Default Title', friends: [], markers: [] } };
   const { user } = useAuth();
   const [markers, setMarkers] = useState([]);
   const [region, setRegion] = useState({
@@ -65,29 +66,28 @@ const MapScreen = ({ route, navigation }) => {
       await uploadBytes(refPath, blob);
       const downloadURL = await getDownloadURL(refPath);
 
-      // Save hunt data with image URL
+      // Save hunt data with image URL and friends array
       await addDoc(collection(db, 'hunts'), {
         ...huntData,
         imageUrl: downloadURL, // Store the image URL in Firestore
         userId: auth.currentUser.uid,
         markers: markers,
+        friends: huntData.friends, // Ensure friends array is saved
       });
 
       Alert.alert('Success', 'Hunt has been saved!');
       navigation.navigate('Profile');
     } catch (error) {
-      alert('Error saving markers: ' + error.message);
+      alert('Error saving hunt: ' + error.message);
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 relative">
-      <TouchableOpacity className="flex-row items-center mb-6" onPress={() => navigation.goBack()}>
-        <Ionicons name="arrow-back" size={32} color="#0951E2" />
-      </TouchableOpacity>
-
+    <View className="flex-1">
+    
       <MapView
         style={{ flex: 1 }}
+        customMapStyle= {customMapStyle}
         region={region}
         showsUserLocation={true}
         followsUserLocation={true}
@@ -97,6 +97,10 @@ const MapScreen = ({ route, navigation }) => {
           <Marker key={index} coordinate={marker.coordinate} title={marker.title} />
         ))}
       </MapView>
+
+      <TouchableOpacity className="absolute top-12 left-4" onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={32} color="#0951E2" />
+      </TouchableOpacity>
 
       <View className="absolute bottom-20 left-4">
         <Image
@@ -120,7 +124,7 @@ const MapScreen = ({ route, navigation }) => {
           </Text>
         </View>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 };
 
