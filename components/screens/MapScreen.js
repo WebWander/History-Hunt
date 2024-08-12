@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 /* import { SafeAreaView } from 'react-native-safe-area-context'; */
 import { db, auth } from '../../firebaseConfig';
 import {  addDoc, collection } from 'firebase/firestore';
@@ -69,10 +69,10 @@ const MapScreen = ({ route, navigation }) => {
       // Save hunt data with image URL and friends array
       await addDoc(collection(db, 'hunts'), {
         ...huntData,
-        imageUrl: downloadURL, // Store the image URL in Firestore
+        imageUrl: downloadURL, 
         userId: auth.currentUser.uid,
-        markers: markers,
-        friends: huntData.friends, // Ensure friends array is saved
+        markers: markers.map(marker => marker.coordinate),
+        friends: huntData.friends,
       });
 
       Alert.alert('Success', 'Hunt has been saved!');
@@ -96,6 +96,13 @@ const MapScreen = ({ route, navigation }) => {
         {markers.map((marker, index) => (
           <Marker key={index} coordinate={marker.coordinate} title={marker.title} />
         ))}
+         {markers.length > 1 && (
+          <Polyline
+            coordinates={markers.map(marker => marker.coordinate)}
+            strokeColor="#FFA500" // Set your color
+            strokeWidth={4}
+          />
+        )}
       </MapView>
 
       <TouchableOpacity className="absolute top-12 left-4" onPress={() => navigation.goBack()}>
@@ -131,7 +138,7 @@ const MapScreen = ({ route, navigation }) => {
 MapScreen.propTypes = {
   route: PropTypes.shape({
     params: PropTypes.shape({
-      huntData: PropTypes.object.isRequired, // Should be an object, not a string
+      huntData: PropTypes.object.isRequired, 
     }).isRequired,
   }).isRequired,
   navigation: PropTypes.shape({

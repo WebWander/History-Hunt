@@ -137,6 +137,10 @@ const ProfileScreen = ({ navigation }) => {
     setModalVisible(true);
   };
 
+  const handleHuntPress = (hunt) => {
+    navigation.navigate('Hunt', { huntData: hunt });
+  };
+
   const renderFriends = (friends) => {
     if (friends.length === 0) return 'Soloing it!';
     if (friends.length === 1) return `With ${friends[0].username}`;
@@ -195,7 +199,8 @@ const ProfileScreen = ({ navigation }) => {
         <View style={{ marginVertical: 20 }}>
           <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#6A0DAD' }}>Active Hunts:</Text>
           {activeHunts.map((hunt, index) => (
-            <View key={index} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 20 }}>
+          <TouchableOpacity key={index} onPress={() => handleHuntPress(hunt)}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 20 }}>
               <Image
                 source={{ uri: hunt.imageUrl }}
                 style={{ width: 40, height: 40, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 100, padding: 5, marginRight: 10 }}
@@ -205,12 +210,14 @@ const ProfileScreen = ({ navigation }) => {
                 <Text style={{ color: 'gray' }}>{renderFriends(hunt.friends)}</Text>
               </View>
             </View>
+            </TouchableOpacity>
           ))}
         </View>
 
         <View style={{ marginVertical: 20 }}>
           <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#6A0DAD' }}>Planned Hunts:</Text>
           {plannedHunts.map((hunt, index) => (
+            <TouchableOpacity key={index} onPress={() => handleHuntPress(hunt)}>
             <View key={index} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 20 }}>
               <Image
                 source={{ uri: hunt.imageUrl }}
@@ -221,6 +228,7 @@ const ProfileScreen = ({ navigation }) => {
                 <Text style={{ color: 'gray' }}>{renderFriends(hunt.friends)}</Text>
               </View>
             </View>
+            </TouchableOpacity>
           ))}
         </View>
 
