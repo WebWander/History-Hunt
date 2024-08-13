@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity} from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,6 +7,15 @@ import PropTypes from 'prop-types';
 
 const ConfirmHuntScreen = ({ route, navigation }) => {
   const { huntData } = route.params || { huntData: { title: 'Default Title', duration: '2', markers: [] } };
+
+ 
+  const validMarkers = huntData.markers && huntData.markers.length > 0 ? huntData.markers : [];
+
+  const getMarkerColor = (index) => {
+    if (index === 0) return '#0951E2'; // First marker
+    if (index === validMarkers.length - 1) return '#B73FFC'; // Last marker
+    return 'orange'; // All other markers
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white px-6">
@@ -30,18 +39,22 @@ const ConfirmHuntScreen = ({ route, navigation }) => {
         <MapView
           style={{ flex: 1 }}
           initialRegion={{
-            latitude: huntData.markers[0]?.latitude || 57.7089,
-            longitude: huntData.markers[0]?.longitude || 11.9746,
+            latitude: validMarkers[0]?.coordinate?.latitude || 57.7089,
+            longitude: validMarkers[0]?.coordinate?.longitude || 11.9746,
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
         >
-          {huntData.markers.map((marker, index) => (
-            <Marker key={index} coordinate={marker} />
+          {validMarkers.map((marker, index) => (
+            <Marker key={index} coordinate={marker.coordinate} title={`Spot ${index + 1}`}>
+            <View style={{ backgroundColor: getMarkerColor(index), paddingVertical: 2, paddingHorizontal:6, borderRadius: 10 }}>
+              <Text style={{ color: 'white', fontWeight: 'bold' }}>{index + 1}</Text>
+            </View>
+          </Marker>
           ))}
-          {huntData.markers.length > 1 && (
+          {validMarkers.length > 1 && (
             <Polyline
-              coordinates={huntData.markers}
+              coordinates={validMarkers.map(marker => marker.coordinate)}
               strokeColor="#FFA500"
               strokeWidth={4}
             />
@@ -51,7 +64,7 @@ const ConfirmHuntScreen = ({ route, navigation }) => {
 
       {/* Estimated Time */}
       <Text className="text-base text-center text-gray-600">This should take approximately:</Text>
-      <Text className="text-2xl font-semibold text-center mb-4">{huntData.duration} hours</Text>
+      <Text className="text-2xl font-semibold text-center mb-4">{huntData.duration}</Text>
 
       {/* Confirm Button */}
       <TouchableOpacity
@@ -70,15 +83,20 @@ ConfirmHuntScreen.propTypes = {
       huntData: PropTypes.shape({
         title: PropTypes.string.isRequired,
         duration: PropTypes.string.isRequired,
-        markers: PropTypes.array.isRequired,
+        markers: PropTypes.arrayOf(
+          PropTypes.shape({
+            coordinate: PropTypes.shape({
+              latitude: PropTypes.number.isRequired,
+              longitude: PropTypes.number.isRequired,
+            }).isRequired,
+          })
+        ).isRequired,
       }).isRequired,
     }).isRequired,
   }).isRequired,
   navigation: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
   }).isRequired,
-
-
 };
 
 export default ConfirmHuntScreen;

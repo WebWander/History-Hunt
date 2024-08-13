@@ -71,7 +71,7 @@ const MapScreen = ({ route, navigation }) => {
         ...huntData,
         imageUrl: downloadURL, 
         userId: auth.currentUser.uid,
-        markers: markers.map(marker => marker.coordinate),
+        markers: markers,
         friends: huntData.friends,
       });
 
@@ -94,12 +94,16 @@ const MapScreen = ({ route, navigation }) => {
         onPress={handleMapPress}
       >
         {markers.map((marker, index) => (
-          <Marker key={index} coordinate={marker.coordinate} title={marker.title} />
+           <Marker key={index} coordinate={marker.coordinate}>
+           <View style={{ backgroundColor: 'orange', padding: 5, borderRadius: 10 }}>
+             <Text style={{ color: 'black', fontWeight: 'bold' }}>{index + 1}</Text>
+           </View>
+          </Marker>
         ))}
          {markers.length > 1 && (
           <Polyline
             coordinates={markers.map(marker => marker.coordinate)}
-            strokeColor="#FFA500" // Set your color
+            strokeColor="#FFA500" 
             strokeWidth={4}
           />
         )}
