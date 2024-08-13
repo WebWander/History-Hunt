@@ -4,17 +4,40 @@ import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PropTypes from 'prop-types';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const ConfirmHuntScreen = ({ route, navigation }) => {
   const { huntData } = route.params || { huntData: { title: 'Default Title', duration: '2', markers: [] } };
 
- 
   const validMarkers = huntData.markers && huntData.markers.length > 0 ? huntData.markers : [];
 
   const getMarkerColor = (index) => {
-    if (index === 0) return '#0951E2'; // First marker
-    if (index === validMarkers.length - 1) return '#B73FFC'; // Last marker
-    return 'orange'; // All other markers
+    if (index === 0) return '#0951E2'; // First marker (blue)
+    if (index === validMarkers.length - 1) return '#B73FFC'; // Last marker (purple)
+    return 'orange'; // All other markers (orange)
+  };
+
+  const renderMarkerList = () => {
+    return huntData.markers.map((marker, index) => {
+      // Show normal size dot with title for the first and last markers
+      if (index === 0 || index === huntData.markers.length - 1) {
+        const color = getMarkerColor(index);
+        const title = marker.title || `Spot ${index + 1}`;
+        return (
+          <View key={index} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+            <View style={{ width: 10, height: 10, backgroundColor: color, borderRadius: 5, marginRight: 8 }} />
+            <Text style={{ fontSize: 16, color: '#333' }}>{title}</Text>
+          </View>
+        );
+      }
+
+      // Show small orange dot for all intermediate markers
+      return (
+        <View key={index} style={{ flexDirection: 'row', marginBottom: 4, marginLeft: 1.5 }}>
+          <View style={{ width: 6, height: 6, backgroundColor: '#FFA500', borderRadius: 3, marginRight: 8 }} />
+        </View>
+      );
+    });
   };
 
   return (
@@ -28,7 +51,7 @@ const ConfirmHuntScreen = ({ route, navigation }) => {
       <Text className="text-4xl font-bold text-center mt-16 mb-4">Confirm Hunt</Text>
 
       {/* Subtitle */}
-      <Text className="text-base text-center text-gray-600">You picked:</Text>
+      <Text className="text-base text-center text-purple-600">You picked:</Text>
       <Text className="text-2xl font-semibold text-center mb-4">{huntData.title}</Text>
 
       {/* Route Description */}
@@ -46,11 +69,11 @@ const ConfirmHuntScreen = ({ route, navigation }) => {
           }}
         >
           {validMarkers.map((marker, index) => (
-            <Marker key={index} coordinate={marker.coordinate} title={`Spot ${index + 1}`}>
-            <View style={{ backgroundColor: getMarkerColor(index), paddingVertical: 2, paddingHorizontal:6, borderRadius: 10 }}>
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>{index + 1}</Text>
-            </View>
-          </Marker>
+            <Marker key={index} coordinate={marker.coordinate} title={marker.title || `Spot ${index + 1}`}>
+              <View style={{ backgroundColor: getMarkerColor(index), paddingVertical: 2, paddingHorizontal: 6, borderRadius: 10 }}>
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>{index + 1}</Text>
+              </View>
+            </Marker>
           ))}
           {validMarkers.length > 1 && (
             <Polyline
@@ -62,16 +85,25 @@ const ConfirmHuntScreen = ({ route, navigation }) => {
         </MapView>
       </View>
 
+      {/* Marker List */}
+      <View className="mb-4">
+        {renderMarkerList()}
+      </View>
+
       {/* Estimated Time */}
-      <Text className="text-base text-center text-gray-600">This should take approximately:</Text>
+      <Text className="text-base text-center text-purple-600">This should take approximately:</Text>
       <Text className="text-2xl font-semibold text-center mb-4">{huntData.duration}</Text>
 
       {/* Confirm Button */}
-      <TouchableOpacity
-        className="bg-purple-700 rounded-full py-4 items-center mt-6"
-        onPress={() => alert('Confirmed!')}
-      >
-        <Text className="text-lg font-bold text-white">CONFIRM</Text>
+      <TouchableOpacity className="w-64 self-center" onPress={() => console.log('confirm')}>
+        <LinearGradient
+          colors={['#0951E2', '#BE3CFB']}
+          className="rounded-full py-4 items-center"
+          start={[0, 0]}
+          end={[1, 0]}
+        >
+          <Text className="text-lg font-bold text-white">CONFIRM</Text>
+        </LinearGradient>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -89,6 +121,7 @@ ConfirmHuntScreen.propTypes = {
               latitude: PropTypes.number.isRequired,
               longitude: PropTypes.number.isRequired,
             }).isRequired,
+            title: PropTypes.string, // Add title to PropTypes
           })
         ).isRequired,
       }).isRequired,

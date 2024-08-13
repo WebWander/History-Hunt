@@ -44,13 +44,34 @@ const MapScreen = ({ route, navigation }) => {
     getCurrentLocation();
   }, []);
 
-  const handleMapPress = (event) => {
-    const newMarker = {
-      coordinate: event.nativeEvent.coordinate,
-      title: `Marker ${markers.length + 1}`,
-    };
-    setMarkers([...markers, newMarker]);
+  const handleMapPress = async (event) => {
+    const { coordinate } = event.nativeEvent;
+    
+    try {
+      // Use Expo's reverse geocode to get the place name
+      const geocodedLocation = await Location.reverseGeocodeAsync({
+        latitude: coordinate.latitude,
+        longitude: coordinate.longitude,
+      });
+  
+      let placeName = 'Unknown place';
+      if (geocodedLocation.length > 0) {
+        const firstResult = geocodedLocation[0];
+        placeName = firstResult.name || firstResult.street || firstResult.city || 'Unknown place';
+      }
+  
+      const newMarker = {
+        coordinate,
+        title: placeName,  // Use the place name as the title
+      };
+      
+      setMarkers([...markers, newMarker]);
+  
+    } catch (error) {
+      console.error('Error getting place name:', error);
+    }
   };
+  
 
   const handleSaveMarkers = async () => {
     if (markers.length === 0) {
