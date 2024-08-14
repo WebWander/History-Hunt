@@ -9,6 +9,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '../../context/authContext';
 
+
 const ProfileScreen = ({ navigation }) => {
   const { user: authUser } = useAuth();
   const [user, setUser] = useState(authUser);
@@ -18,7 +19,6 @@ const ProfileScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    console.log('ProfileScreen useEffect - authUser:', authUser);
     if (authUser) {
       setUser(authUser);
       if (authUser.profileImageUrl) {
@@ -124,11 +124,11 @@ const ProfileScreen = ({ navigation }) => {
         }
       >
         <TouchableOpacity style={{ position: 'absolute', top: 10, left: 10 }} onPress={() => console.log('Close')}>
-          <Ionicons name="close" size={30} color="orange" />
+          <Ionicons name="close" size={30} color="#ff8c00" />
         </TouchableOpacity>
 
         <View style={{ alignItems: 'center', marginTop: 50, position: 'relative' }}>
-          <View style={{ borderColor: '#6A0DAD', borderWidth: 2, borderRadius: 60, overflow: 'hidden', width: 120, height: 120 }}>
+          <View style={{ borderColor: '#dda0dd', borderWidth: 4, borderRadius: 60, overflow: 'hidden', width: 120, height: 120 }}>
             <Image
               source={{ uri: profileImage }}
               style={{ width: '100%', height: '100%' }}
@@ -140,7 +140,7 @@ const ProfileScreen = ({ navigation }) => {
               position: 'absolute',
               right: 130,
               bottom: 0,
-              backgroundColor: '#FF6347',
+              backgroundColor: '#ff8c00',
               borderRadius: 15,
               padding: 5,
             }}
@@ -161,7 +161,7 @@ const ProfileScreen = ({ navigation }) => {
         />
 
         <View style={{ marginVertical: 20 }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#6A0DAD' }}>Active Hunts:</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#dda0dd' }}>Active Hunts:</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 20 }}>
             <Image source={{ uri: 'https://example.com/image1.jpg' }} style={{ width: 40, height: 40, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 100, padding: 5, marginRight: 10 }} />
             <View style={{ flex: 1 }}>
@@ -179,25 +179,25 @@ const ProfileScreen = ({ navigation }) => {
         </View>
 
         <View style={{ marginVertical: 0 }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#6A0DAD' }}>Planned Hunts:</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#dda0dd' }}>Planned Hunts:</Text>
           {hunts.map((hunt, index) => (
             <View key={index} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 20 }}>
               <Image source={{ uri: hunt.imageUrl }} style={{ width: 40, height: 40, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 100, padding: 5, marginRight: 10 }} />
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{hunt.title}</Text>
-                <Text style={{ color: 'gray' }}> With: {hunt.friends.join(',')}</Text>
+                <Text style={{ color: 'gray' }}>  {hunt.friends.join(',')}</Text>
               </View>
             </View>
           ))}
           <TouchableOpacity onPress={() => navigation.navigate('Customize')}>
-            <Text style={{ marginTop: 20, color: '#FF6347', fontSize: 16 }}>Create Hunt</Text>
+            <Text style={{ marginTop: 20, color: '#ff8c00', fontSize: 16, textDecorationLine: 'underline', fontWeight: '500' }}>create hunt</Text>
           </TouchableOpacity>
         </View>
 
         <View style={{ alignItems: 'center', marginVertical: 20 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
             <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>MEDALS</Text>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#0000cd' }}>MEDALS</Text>
             <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', width: '100%', marginVertical: 20 }}>
