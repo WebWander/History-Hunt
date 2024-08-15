@@ -10,7 +10,7 @@ import * as Location from 'expo-location';
 import HistoryHuntImage from '../../assets/letter.jpg';
 import { Ionicons } from '@expo/vector-icons';
 import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
-import { customMapStyle } from '../ui/mapStyle';
+/* import { customMapStyle } from '../ui/mapStyle'; */
 
 const MapScreen = ({ route, navigation }) => {
   const { huntData } = route.params || { huntData: { title: 'Default Title', friends: [], markers: [] } };
@@ -108,7 +108,7 @@ const MapScreen = ({ route, navigation }) => {
     
       <MapView
         style={{ flex: 1 }}
-        /* customMapStyle= {customMapStyle} */
+        mapType='satellite'
         region={region}
         showsUserLocation={true}
         followsUserLocation={true}

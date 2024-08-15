@@ -12,6 +12,7 @@ import MapScreen from './screens/MapScreen';
 /* import StartPage from './screens'; */
 import HomeScreen from './screens/HomeScreen';
 import ConfirmHuntScreen from './screens/HuntScreen';
+import RouteMapScreen from './screens/RouteMapScreen';
 
 
 
@@ -56,6 +57,7 @@ const AppNavigator = () => {
       <Stack.Screen name="Invite" component={InviteFriends} options={{ headerShown: false }} />
       <Stack.Screen name="Map" component={MapScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Hunt" component={ConfirmHuntScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Route" component={RouteMapScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       
     </Stack.Navigator>

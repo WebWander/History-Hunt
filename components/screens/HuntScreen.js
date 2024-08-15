@@ -95,16 +95,19 @@ const ConfirmHuntScreen = ({ route, navigation }) => {
       <Text className="text-2xl font-semibold text-center mb-4">{huntData.duration}</Text>
 
       {/* Confirm Button */}
-      <TouchableOpacity className="w-64 self-center" onPress={() => console.log('confirm')}>
-        <LinearGradient
-          colors={['#0951E2', '#BE3CFB']}
-          className="rounded-full py-4 items-center"
-          start={[0, 0]}
-          end={[1, 0]}
-        >
-          <Text className="text-lg font-bold text-white">CONFIRM</Text>
-        </LinearGradient>
-      </TouchableOpacity>
+      <TouchableOpacity
+           className="w-64 self-center" 
+           onPress={() => navigation.navigate('Route', { huntData })}
+      >
+      <LinearGradient
+           colors={['#0951E2', '#BE3CFB']}
+           className="rounded-full py-4 items-center"
+           start={[0, 0]}
+           end={[1, 0]}
+           >
+      <Text className="text-lg font-bold text-white">CONFIRM</Text>
+      </LinearGradient>
+     </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -129,6 +132,7 @@ ConfirmHuntScreen.propTypes = {
   }).isRequired,
   navigation: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
+    navigate: PropTypes.func.isRequired,
   }).isRequired,
 };
 
