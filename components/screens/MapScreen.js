@@ -108,7 +108,7 @@ const MapScreen = ({ route, navigation }) => {
     
       <MapView
         style={{ flex: 1 }}
-        customMapStyle= {customMapStyle}
+        /* customMapStyle= {customMapStyle} */
         region={region}
         showsUserLocation={true}
         followsUserLocation={true}
