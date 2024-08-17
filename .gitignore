@@ -1,5 +1,7 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+GOOGLE_MAPS_API_KEY='AIzaSyA4rsU2CLdCSerkMXufguIp2B1YadQRrvo'
+
 # dependencies
 node_modules/
 
