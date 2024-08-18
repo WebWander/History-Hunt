@@ -9,7 +9,9 @@ import HistoryHuntImage from '../../assets/letter.jpg';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 
-const RouteMapScreen = ({ route }) => {
+const TARGET_RADIUS = 3000; // Radius in meters
+
+const RouteMapScreen = ({ route, navigation }) => {
   const { huntData } = route.params || { huntData: { title: 'Default Title', markers: [] } };
   const [location, setLocation] = useState(null);
   const [routeCoordinates, setRouteCoordinates] = useState([]);
@@ -17,6 +19,8 @@ const RouteMapScreen = ({ route }) => {
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [modalVisible, setModalVisible] = useState(true);
   const { user } = useAuth();
+
+  const [isCloseToTarget, setIsCloseToTarget] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -26,10 +30,20 @@ const RouteMapScreen = ({ route }) => {
         return;
       }
 
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location.coords);
+      Location.watchPositionAsync(
+        { accuracy: Location.Accuracy.Highest, distanceInterval: 1 },
+        (newLocation) => {
+          setLocation(newLocation.coords);
+          if (selectedMarker) {
+            checkProximity(newLocation.coords, selectedMarker.coordinate);
+          }
+        }
+      );
     })();
-  }, []);
+  }, [selectedMarker]);
+
+
+  
 
   useEffect(() => {
     if (location && selectedMarker) {
@@ -95,16 +109,46 @@ const RouteMapScreen = ({ route }) => {
 
   const handleMarkerPress = (marker) => {
     if (location) {
-      /* getDirections(location, marker.coordinate, transportationMode); */
+      getDirections(location, marker.coordinate, transportationMode);
       setSelectedMarker(marker);
     }
+  };
+
+  
+  const getDistance = (loc1, loc2) => {
+    const toRad = (x) => (x * Math.PI) / 180;
+    const R = 6371e3; // Earth's radius in meters
+
+    const dLat = toRad(loc2.latitude - loc1.latitude);
+    const dLon = toRad(loc2.longitude - loc1.longitude);
+    const lat1 = toRad(loc1.latitude);
+    const lat2 = toRad(loc2.latitude);
+
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+  };
+
+  const checkProximity = (userLocation, targetLocation) => {
+    const distance = getDistance(userLocation, targetLocation);
+    if (distance <= TARGET_RADIUS){
+        Alert.alert (
+            'You have reached your destination!',
+            'Now you can press the camera icon to continue'
+        )
+    }
+    setIsCloseToTarget(distance <= TARGET_RADIUS);
+   
+    
   };
   
 
   return (
     <View className="flex-1">
       <LinearGradient
-        colors={['#BE3CFB', '#0951E2']}
+        colors={['#BE3CFBcc', '#0951E2cc']}
         start={[0, 0]}
         end={[0, 1]}
         locations={[0, 0.7]}
@@ -187,17 +231,29 @@ const RouteMapScreen = ({ route }) => {
       </View>
 
       <TouchableOpacity
-        className="absolute bottom-14 right-36"
-        onPress={console.log('next step')}
-      >
-        <View className="flex-column items-center px-4 py-2">
-          <Image
-            source={HistoryHuntImage}
-            className="w-16 h-16 rounded-full border-0.5"
-            style={{ borderColor: '#ba55d3', color: '#ba55d3' }}
-          />
-        </View>
-      </TouchableOpacity>
+  className="absolute bottom-14 right-36"
+  onPress={() => {
+    if (selectedMarker) {
+      navigation.navigate('Camera', { huntData, selectedMarker });
+    } else {
+      Alert.alert('No marker selected', 'Please select a marker first.');
+    }
+  }}
+>
+  <View className="flex-column items-center px-4 py-2">
+    {isCloseToTarget ? (
+      <Ionicons name="camera" size={50} color="black" />
+    ) : (
+      <Image
+        source={HistoryHuntImage}
+        className="w-16 h-16 rounded-full border-0.5"
+        style={{ borderColor: '#ba55d3', color: '#ba55d3' }}
+      />
+    )}
+  </View>
+</TouchableOpacity>
+
+
     </View>
   );
 };

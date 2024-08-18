@@ -108,7 +108,7 @@ const MapScreen = ({ route, navigation }) => {
     
       <MapView
         style={{ flex: 1 }}
-        mapType='satellite'
+        mapType='standard'
         region={region}
         showsUserLocation={true}
         followsUserLocation={true}
