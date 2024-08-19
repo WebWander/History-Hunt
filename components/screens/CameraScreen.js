@@ -1,13 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; 
+import * as ImagePicker from 'expo-image-picker'; 
 import Button from '../ui/Button';
 
 const CameraScreen = () => {
   const [modalVisible, setModalVisible] = useState(true);
+  const [image, setImage] = useState(null);
 
-  const handleCameraClick = () => {
-    setModalVisible(true); 
+  const handleCameraClick = async () => {
+    // Request permission to access the camera
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status === 'granted') {
+      // Launch the camera
+      let result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setImage(result.assets[0].uri);
+      }
+    } else {
+      alert('Camera permission is required!');
+    }
   };
 
   const handleCloseModal = () => {
