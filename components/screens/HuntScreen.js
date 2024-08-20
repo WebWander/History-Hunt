@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,9 +12,9 @@ const ConfirmHuntScreen = ({ route, navigation }) => {
   const validMarkers = huntData.markers && huntData.markers.length > 0 ? huntData.markers : [];
 
   const getMarkerColor = (index) => {
-    if (index === 0) return '#0951E2'; 
-    if (index === validMarkers.length - 1) return '#B73FFC'; 
-    return 'orange'; 
+    if (index === 0) return '#0951E2';
+    if (index === validMarkers.length - 1) return '#B73FFC';
+    return 'orange';
   };
 
   const renderMarkerList = () => {
@@ -30,7 +30,6 @@ const ConfirmHuntScreen = ({ route, navigation }) => {
         );
       }
 
-     
       return (
         <View key={index} style={{ flexDirection: 'row', marginBottom: 4, marginLeft: 1.5 }}>
           <View style={{ width: 6, height: 6, backgroundColor: '#FFA500', borderRadius: 3, marginRight: 8 }} />
@@ -40,24 +39,24 @@ const ConfirmHuntScreen = ({ route, navigation }) => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white px-6">
+    <SafeAreaView style={styles.safeAreaView}>
       {/* Back Button */}
-      <TouchableOpacity className="absolute top-12 left-4" onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={32} color="#0951E2" />
       </TouchableOpacity>
 
       {/* Title */}
-      <Text className="text-4xl font-bold text-center mt-16 mb-4">Confirm Hunt</Text>
+      <Text style={styles.title}>Confirm Hunt</Text>
 
       {/* Subtitle */}
-      <Text className="text-base text-center text-purple-600">You picked:</Text>
-      <Text className="text-2xl font-semibold text-center mb-4">{huntData.title}</Text>
+      <Text style={styles.subtitle}>You picked:</Text>
+      <Text style={styles.huntTitle}>{huntData.title}</Text>
 
       {/* Route Description */}
-      <Text className="text-sm text-center text-purple-600 mb-4">Here is the route you will be taking:</Text>
+      <Text style={styles.routeDescription}>Here is the route you will be taking:</Text>
 
       {/* Map Displaying the Route */}
-      <View className="w-full h-56 mb-6">
+      <View style={styles.mapContainer}>
         <MapView
           style={{ flex: 1 }}
           initialRegion={{
@@ -85,16 +84,22 @@ const ConfirmHuntScreen = ({ route, navigation }) => {
       </View>
 
       {/* Marker List */}
-      <View className="mb-4">
+      <View style={styles.markerListContainer}>
         {renderMarkerList()}
       </View>
 
       {/* Estimated Time */}
-      <Text className="text-base text-center text-purple-600">This should take approximately:</Text>
-      <Text className="text-2xl font-semibold text-center mb-4">{huntData.duration}</Text>
+      <Text style={styles.estimatedTimeText}>This should take approximately:</Text>
+      <Text style={styles.estimatedTime}>{huntData.duration}</Text>
 
       {/* Confirm Button */}
-      <TouchableOpacity style={styles.confirmButton} onPress={() => navigation.navigate('RouteMap', { huntData })}>
+      <TouchableOpacity
+        style={styles.confirmButton}
+        onPress={() => {
+          // Navigate to the Camera screen, passing along the huntData and currentIndex
+          navigation.navigate('Camera', { huntData, currentIndex: 0 });
+        }}
+      >
         <LinearGradient
           colors={['#0951E2', '#BE3CFB']}
           style={styles.gradientButton}
@@ -120,7 +125,7 @@ ConfirmHuntScreen.propTypes = {
               latitude: PropTypes.number.isRequired,
               longitude: PropTypes.number.isRequired,
             }).isRequired,
-            title: PropTypes.string, // Add title to PropTypes
+            title: PropTypes.string,
           })
         ).isRequired,
       }).isRequired,
@@ -228,6 +233,5 @@ const styles = StyleSheet.create({
     color: 'white',
   },
 });
-
 
 export default ConfirmHuntScreen;

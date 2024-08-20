@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; 
-import * as ImagePicker from 'expo-image-picker'; 
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import Button from '../ui/Button';
 
-const CameraScreen = () => {
+const CameraScreen = ({ route, navigation }) => {
+  const { huntData, currentIndex } = route.params;
   const [initialModalVisible, setInitialModalVisible] = useState(false);
   const [cameraModalVisible, setCameraModalVisible] = useState(false);
   const [image, setImage] = useState(null);
@@ -15,10 +16,8 @@ const CameraScreen = () => {
   }, []);
 
   const handleCameraClick = async () => {
-    // Request permission to access the camera
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status === 'granted') {
-      // Launch the camera
       let result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -40,13 +39,27 @@ const CameraScreen = () => {
   };
 
   const handleCloseCameraModal = () => {
-    setCameraModalVisible(false); 
+    setCameraModalVisible(false);
+    if (currentIndex + 1 < huntData.markers.length) {
+      // Navigate to the next location
+      navigation.navigate('Camera', {
+        huntData,
+        currentIndex: currentIndex + 1,
+      });
+    } else {
+      // Finish the hunt or navigate to another screen
+      alert('Congratulations! You have completed the hunt.');
+      navigation.navigate('HuntCompletion'); // Example of navigating to a completion screen
+    }
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={handleCameraClick} style={{backgroundColor: '#BA49FF', borderRadius: 30, padding: 5, marginBottom: 50 }}>
-        <Ionicons name="camera" size={50} color="white"  />
+      <TouchableOpacity
+        onPress={handleCameraClick}
+        style={{ backgroundColor: '#BA49FF', borderRadius: 30, padding: 5, marginBottom: 50 }}
+      >
+        <Ionicons name="camera" size={50} color="white" />
       </TouchableOpacity>
 
       {/* Initial Modal */}
@@ -62,8 +75,8 @@ const CameraScreen = () => {
               <Ionicons name="close" size={30} color="orange" />
             </TouchableOpacity>
             <Text style={styles.modalTitle}>TAKE A PHOTO</Text>
-            <Text style={styles.clueText}>Walk to this area to where the Grande Harvest Wine shop is located next to Track 17.</Text>
-            <Button style={styles.closeButton}  onPress={handleCloseInitialModal}>
+            <Text style={styles.clueText}>{huntData.markers[currentIndex].title}</Text>
+            <Button style={styles.closeButton} onPress={handleCloseInitialModal}>
               <Text style={styles.closeButtonText}>OK, I'M HERE</Text>
             </Button>
           </View>
@@ -83,10 +96,10 @@ const CameraScreen = () => {
               <Ionicons name="close" size={30} color="orange" />
             </TouchableOpacity>
             <Text style={styles.modalTitle}>NICE!</Text>
-            {image && (
-              <Image source={{ uri: image }} style={styles.capturedImage} />
-            )}
-            <Text style={styles.taskText}>You've completed 2/3 tasks</Text>
+            {image && <Image source={{ uri: image }} style={styles.capturedImage} />}
+            <Text style={styles.taskText}>
+              You've completed {currentIndex + 1}/{huntData.markers.length} tasks
+            </Text>
             <Button style={styles.continueButton} onPress={handleCloseCameraModal}>
               <Text style={styles.continueButtonText}>CONTINUE</Text>
             </Button>
@@ -160,4 +173,6 @@ const styles = StyleSheet.create({
   },
 });
 
+
 export default CameraScreen;
+
