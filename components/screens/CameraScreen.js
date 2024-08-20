@@ -6,12 +6,12 @@ import Button from '../ui/Button';
 
 const CameraScreen = ({ route, navigation }) => {
   const { huntData, currentIndex } = route.params;
+  console.log(currentIndex);
   const [initialModalVisible, setInitialModalVisible] = useState(false);
   const [cameraModalVisible, setCameraModalVisible] = useState(false);
   const [image, setImage] = useState(null);
 
   useEffect(() => {
-    // Show the initial modal when the component is mounted
     setInitialModalVisible(true);
   }, []);
 
@@ -26,8 +26,8 @@ const CameraScreen = ({ route, navigation }) => {
       });
 
       if (!result.canceled) {
-        setImage(result.assets[0].uri); // Set the captured image URI
-        setCameraModalVisible(true); // Show the modal with the captured image
+        setImage(result.assets[0].uri);
+        setCameraModalVisible(true);
       }
     } else {
       alert('Camera permission is required!');
@@ -40,16 +40,14 @@ const CameraScreen = ({ route, navigation }) => {
 
   const handleCloseCameraModal = () => {
     setCameraModalVisible(false);
-    if (currentIndex  < huntData.markers.length) {
-      // Navigate to the next location
-      navigation.navigate('Camera', {
-        huntData,
-        currentIndex: currentIndex ,
-      });
+    if (currentIndex < huntData.markers.length) {
+      console.log(huntData.markers);
+      // Move to the next marker if not at the end
+      navigation.navigate('Route', { huntData, currentIndex: currentIndex });
     } else {
-      // Finish the hunt or navigate to another screen
+      // End of the hunt
       alert('Congratulations! You have completed the hunt.');
-      navigation.navigate('Profile'); // Example of navigating to a completion screen
+      navigation.navigate('Profile'); // Navigate to the completion screen
     }
   };
 
@@ -62,7 +60,6 @@ const CameraScreen = ({ route, navigation }) => {
         <Ionicons name="camera" size={50} color="white" />
       </TouchableOpacity>
 
-      {/* Initial Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -75,7 +72,7 @@ const CameraScreen = ({ route, navigation }) => {
               <Ionicons name="close" size={30} color="orange" />
             </TouchableOpacity>
             <Text style={styles.modalTitle}>TAKE A PHOTO</Text>
-            <Text style={styles.clueText}>{huntData.markers[currentIndex].title}</Text>
+            <Text style={styles.clueText}>Walk to this area to where the Grande Harvest Wine shop is located next to Track 17</Text>
             <Button style={styles.closeButton} onPress={handleCloseInitialModal}>
               <Text style={styles.closeButtonText}>OK, I'M HERE</Text>
             </Button>
@@ -83,7 +80,6 @@ const CameraScreen = ({ route, navigation }) => {
         </View>
       </Modal>
 
-      {/* Camera Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -173,6 +169,4 @@ const styles = StyleSheet.create({
   },
 });
 
-
 export default CameraScreen;
-

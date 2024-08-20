@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 const TARGET_RADIUS = 3000; // Radius in meters
 
 const RouteMapScreen = ({ route, navigation }) => {
-  const { huntData } = route.params || { huntData: { title: 'Default Title', markers: [] } };
+  const { huntData, currentIndex = 1 } = route.params || { huntData: { title: 'Default Title', markers: [] }, currentIndex: 1 };
   const [location, setLocation] = useState(null);
   const [routeCoordinates, setRouteCoordinates] = useState([]);
   const [transportationMode, setTransportationMode] = useState('driving'); 
@@ -20,6 +20,8 @@ const RouteMapScreen = ({ route, navigation }) => {
   const [modalVisible, setModalVisible] = useState(true);
   const { user } = useAuth();
   const [isCloseToTarget, setIsCloseToTarget] = useState(false);
+
+  // const markers = huntData.markers.slice(0, currentIndex );
 
   useEffect(() => {
     (async () => {

@@ -97,7 +97,7 @@ const ConfirmHuntScreen = ({ route, navigation }) => {
         style={styles.confirmButton}
         onPress={() => {
           // Navigate to the Camera screen, passing along the huntData and currentIndex
-          navigation.navigate('Camera', { huntData, currentIndex: 0 });
+          navigation.navigate('Route', { huntData, currentIndex: 1 });
         }}
       >
         <LinearGradient
