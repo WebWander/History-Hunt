@@ -40,16 +40,16 @@ const CameraScreen = ({ route, navigation }) => {
 
   const handleCloseCameraModal = () => {
     setCameraModalVisible(false);
-    if (currentIndex + 1 < huntData.markers.length) {
+    if (currentIndex  < huntData.markers.length) {
       // Navigate to the next location
       navigation.navigate('Camera', {
         huntData,
-        currentIndex: currentIndex + 1,
+        currentIndex: currentIndex ,
       });
     } else {
       // Finish the hunt or navigate to another screen
       alert('Congratulations! You have completed the hunt.');
-      navigation.navigate('HuntCompletion'); // Example of navigating to a completion screen
+      navigation.navigate('Profile'); // Example of navigating to a completion screen
     }
   };
 
@@ -98,7 +98,7 @@ const CameraScreen = ({ route, navigation }) => {
             <Text style={styles.modalTitle}>NICE!</Text>
             {image && <Image source={{ uri: image }} style={styles.capturedImage} />}
             <Text style={styles.taskText}>
-              You've completed {currentIndex + 1}/{huntData.markers.length} tasks
+              You've completed {currentIndex}/{huntData.markers.length} tasks
             </Text>
             <Button style={styles.continueButton} onPress={handleCloseCameraModal}>
               <Text style={styles.continueButtonText}>CONTINUE</Text>

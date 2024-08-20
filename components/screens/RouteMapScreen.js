@@ -218,7 +218,13 @@ const RouteMapScreen = ({ route, navigation }) => {
         className="absolute bottom-14 right-36"
         onPress={() => {
           if (selectedMarker) {
-            navigation.navigate('Camera', { huntData, selectedMarker });
+            // Find the index of the selected marker
+            const selectedIndex = huntData.markers.findIndex(
+              (marker) => marker.coordinate.latitude === selectedMarker.coordinate.latitude &&
+                          marker.coordinate.longitude === selectedMarker.coordinate.longitude
+            ) + 1; // Convert to 1-based index
+
+            navigation.navigate('Camera', { huntData, selectedMarker, currentIndex: selectedIndex, totalLocations: huntData.markers.length });
           } else {
             alert('No marker selected', 'Please select a marker first.');
           }
