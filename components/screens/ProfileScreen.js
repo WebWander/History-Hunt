@@ -175,11 +175,14 @@ const ProfileScreen = ({ navigation }) => {
     navigation.navigate('Hunt', { huntData: { ...hunt, id: hunt.huntId } });
   };
 
-  const renderFriends = (friends) => {
-    if (friends.length === 0) return 'Soloing it!';
-    if (friends.length === 1) return `With ${friends[0].username}`;
-    if (friends.length === 2) return `With ${friends[0].username} and ${friends[1].username}`;
-    return `With ${friends.slice(0, -1).map(friend => friend.username).join(', ')} and ${friends[friends.length - 1].username}`;
+  const renderFriends = (hunt) => {
+    const friends = hunt.friends || [];
+    const creatorName = hunt.creatorName || 'Unknown'; // Ensure creator's name is included
+
+    if (friends.length === 0) return `With ${creatorName}`;
+    if (friends.length === 1) return `With ${creatorName} and ${friends[0].username}`;
+    if (friends.length === 2) return `With ${creatorName}, ${friends[0].username}, and ${friends[1].username}`;
+    return `With ${creatorName}, ${friends.slice(0, -1).map(friend => friend.username).join(', ')}, and ${friends[friends.length - 1].username}`;
   };
 
   return (
@@ -198,9 +201,7 @@ const ProfileScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <View style={{ alignItems: 'center', marginTop: 50, position: 'relative' }}>
-          <View style={{ borderColor: '#6A0DAD', borderWidth: 2, borderRadius: 80, overflow: 'hidden', width: 140, height: 140
-           
-           }}>
+          <View style={{ borderColor: '#6A0DAD', borderWidth: 2, borderRadius: 80, overflow: 'hidden', width: 140, height: 140 }}>
             <Image
               source={{ uri: profileImage }}
               style={{ width: '100%', height: '100%' }}
@@ -243,7 +244,7 @@ const ProfileScreen = ({ navigation }) => {
                 />
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{hunt.title}</Text>
-                  <Text style={{ color: 'gray' }}>{renderFriends(hunt.friends)}</Text>
+                  <Text style={{ color: 'gray' }}>{renderFriends(hunt)}</Text>
                 </View>
               </View>
             </TouchableOpacity>
@@ -261,7 +262,7 @@ const ProfileScreen = ({ navigation }) => {
                 />
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{hunt.title}</Text>
-                  <Text style={{ color: 'gray' }}>{renderFriends(hunt.friends)}</Text>
+                  <Text style={{ color: 'gray' }}>{renderFriends(hunt)}</Text>
                 </View>
               </View>
             </TouchableOpacity>
@@ -273,38 +274,35 @@ const ProfileScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <View style={{ alignItems: 'center', marginVertical: 20 }}>
-  <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
-    <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
-    <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>MEDALS</Text>
-    <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
-  </View>
-  <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', width: '100%', marginVertical: 20 }}>
-    {completedHunts.map((hunt, index) => (
-      <Image
-        key={index}
-        source={{ uri: hunt.imageUrl }}
-        style={{ width: 60, height: 60, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 30, margin: 10 }}
-      />
-    ))}
+          <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>MEDALS</Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', width: '100%', marginVertical: 20 }}>
+            {completedHunts.map((hunt, index) => (
+              <Image
+                key={index}
+                source={{ uri: hunt.imageUrl }}
+                style={{ width: 60, height: 60, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 30, margin: 10 }}
+              />
+            ))}
 
-    {/* Adding empty medal placeholders */}
-    {Array.from({ length: 8 - completedHunts.length }).map((_, index) => (
-      <View
-        key={`placeholder-${index}`}
-        style={{
-          width: 60,
-          height: 60,
-          backgroundColor: '#d3d3d3', // Gray color for empty medals
-          /* borderColor: '#6A0DAD',
-          borderWidth: 0.5, */
-          borderRadius: 30,
-          margin: 10,
-        }}
-      />
-    ))}
-  </View>
-</View>
-
+            {/* Adding empty medal placeholders */}
+            {Array.from({ length: 8 - completedHunts.length }).map((_, index) => (
+              <View
+                key={`placeholder-${index}`}
+                style={{
+                  width: 60,
+                  height: 60,
+                  backgroundColor: '#d3d3d3', // Gray color for empty medals
+                  borderRadius: 30,
+                  margin: 10,
+                }}
+              />
+            ))}
+          </View>
+        </View>
 
         <StatusBar style="auto" />
       </ScrollView>
