@@ -6,7 +6,8 @@ import Button from '../ui/Button';
 import { Image } from 'react-native-elements';
 import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 import { auth, db } from '../../firebaseConfig';
-import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
+import { addDoc, arrayUnion, collection, doc, updateDoc } from 'firebase/firestore';
+import PropTypes from 'prop-types';
 
 const CameraScreen = ({ route, navigation }) => {
   const { huntData, currentIndex } = route.params;
@@ -111,12 +112,16 @@ const CameraScreen = ({ route, navigation }) => {
   const handleCloseInitialModal = () => {
     setInitialModalVisible(false);
     
+    
   };
 
   const markHuntAsCompleted = async (huntId) => {
     try {
       const huntRef = doc(db, 'hunts', huntId);
-      await updateDoc(huntRef, { completed: true });
+      await updateDoc(huntRef, {
+         completedBy: arrayUnion(auth.currentUser.uid)
+         });
+         
       console.log('Hunt marked as completed');
     } catch (error) {
       console.error('Error marking hunt as completed: ', error);
@@ -129,8 +134,9 @@ const CameraScreen = ({ route, navigation }) => {
     setCameraModalVisible(false);
   
     if (currentIndex < huntData.markers.length - 1) {
-      // Navigate to the next location
+
       navigation.navigate('Route', { huntData });
+
     } else {
       // Mark the hunt as completed and navigate to the Profile screen
       try {
@@ -149,9 +155,9 @@ const CameraScreen = ({ route, navigation }) => {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={handleCameraClick}
-        style={{ backgroundColor: '#BA49FF', borderRadius: 30, padding: 5, marginBottom: 50 }}
+        style={{ backgroundColor: '#BA49FF', borderRadius: 40, padding: 12, marginBottom: 50 }}
       >
-        <Ionicons name="camera" size={50} color="white" />
+        <Ionicons name="camera" size={60} color="white" />
       </TouchableOpacity>
 
       {/* Initial Modal */}
@@ -207,7 +213,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     alignItems: 'center',
-    backgroundColor: '#dcdcdc',
+    backgroundColor: 'white',
   },
   modalOverlay: {
     flex: 1,
@@ -264,5 +270,24 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
 });
+
+CameraScreen.propTypes = {
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      huntData: PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        markers: PropTypes.arrayOf(
+          PropTypes.shape({
+            title: PropTypes.string.isRequired,
+          })
+        ).isRequired,
+      }).isRequired,
+      currentIndex: PropTypes.number.isRequired,
+    }).isRequired,
+  }).isRequired,
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default CameraScreen;

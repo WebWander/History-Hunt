@@ -19,6 +19,8 @@ const RouteMapScreen = ({ route, navigation }) => {
   const [transportationMode, setTransportationMode] = useState('driving'); 
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [modalVisible, setModalVisible] = useState(true);
+  const [clueModalVisible, setClueModalVisible] = useState(false);
+  const [currentClueIndex, setCurrentClueIndex] = useState(null);
   const { user } = useAuth();
 
   const [isCloseToTarget, setIsCloseToTarget] = useState(false);
@@ -36,7 +38,7 @@ const RouteMapScreen = ({ route, navigation }) => {
         (newLocation) => {
           setLocation(newLocation.coords);
           if (selectedMarker !== null) {
-            checkProximity(newLocation.coords, huntData.markers[selectedMarker].coordinate);
+            checkProximity(newLocation.coords, huntData.markers[selectedMarker].coordinate, selectedMarker);
           }
         }
       );
@@ -132,7 +134,7 @@ const RouteMapScreen = ({ route, navigation }) => {
     return R * c;
   };
 
-  const checkProximity = (userLocation, targetLocation) => {
+  const checkProximity = (userLocation, targetLocation, index ) => {
     const distance = getDistance(userLocation, targetLocation);
    /*  if (distance <= TARGET_RADIUS){
         Alert.alert (
@@ -141,6 +143,12 @@ const RouteMapScreen = ({ route, navigation }) => {
         )
     } */
     setIsCloseToTarget(distance <= TARGET_RADIUS);
+    if (currentClueIndex !== index ) {
+        setCurrentClueIndex(index);
+        setClueModalVisible(true);
+    } else {
+        setIsCloseToTarget(false);
+    }
    
     
   };
@@ -177,6 +185,11 @@ const RouteMapScreen = ({ route, navigation }) => {
 
       </LinearGradient>
 
+      <TouchableOpacity className="absolute top-12 left-4" onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={32} color="orange" />
+      </TouchableOpacity>
+
+
       <MapView
         style={{ flex: 1 }}
         initialRegion={{
@@ -207,6 +220,33 @@ const RouteMapScreen = ({ route, navigation }) => {
           />
         )}
       </MapView>
+
+      <Modal
+  animationType="slide"
+  transparent={true}
+  visible={clueModalVisible}
+  onRequestClose={() => setClueModalVisible(false)}
+>
+  <Pressable style={{ flex: 1 }} onPress={() => setClueModalVisible(false)}>
+    <View className="flex-1 justify-center bg-black/50">
+      <View className="rounded-3xl p-4 mb-50 mx-12 shadow-lg" style={{ backgroundColor: '#282D41' }}>
+        <Text className="text-center mt-2" style={{ fontSize: 18, color: 'rgba(238, 238, 238, 0.8)' }}>
+          You have reached a clue!
+        </Text>
+        <Text className="text-center font-bold mb-2 mt-2" style={{ fontSize: 18, color: 'rgba(238, 238, 238, 0.8)', textDecorationLine: 'underline' }}>
+          {huntData.markers[currentClueIndex]?.title || 'Unknown Clue'}
+        </Text>
+        <Text className="text-center mt-2" style={{ fontSize: 16, color: 'rgba(238, 238, 238, 0.8)' }}>
+          Now you can press the camera icon to take a photo and complete your first task!
+        </Text>
+        <Text className="text-center mt-2" style={{ fontSize: 16, color: 'rgba(238, 238, 238, 0.8)' }}>
+          Tap anywhere to continue.
+        </Text>
+      </View>
+    </View>
+  </Pressable>
+</Modal>
+
 
       <Modal
         animationType="fade"
