@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert } from 'react-native';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '../../firebaseConfig';
 import Button from '../ui/Button';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '../../context/authContext';
-import Loading from '../Loading';
+/* import Loading from '../Loading'; */
 
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -84,15 +82,15 @@ const SignUpScreen = ({ navigation }) => {
         />
       </View>
       <View>
-        {loading ? (
+      {/*   {loading ? (
           <View style={{ alignItems: 'center' }}>
             <Loading/>
           </View>
-        ) : (
+        ) : ( */}
           <Button onPress={handleSignUp}>
             <Text style={{ color: 'white', fontSize: 16, fontWeight: '900' }}>CONTINUE</Text>
           </Button>
-        )}
+       {/*  )} */}
       </View>
     
       <View style={styles.note}>
