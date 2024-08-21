@@ -13,6 +13,7 @@ const TARGET_RADIUS = 3000; // Radius in meters
 
 const RouteMapScreen = ({ route, navigation }) => {
   const { huntData } = route.params || { huntData: { title: 'Default Title', markers: [] } };
+  const huntId = huntData.id;
   const [location, setLocation] = useState(null);
   const [routeCoordinates, setRouteCoordinates] = useState([]);
   const [transportationMode, setTransportationMode] = useState('driving'); 
@@ -34,8 +35,8 @@ const RouteMapScreen = ({ route, navigation }) => {
         { accuracy: Location.Accuracy.Highest, distanceInterval: 1 },
         (newLocation) => {
           setLocation(newLocation.coords);
-          if (selectedMarker) {
-            checkProximity(newLocation.coords, selectedMarker.coordinate);
+          if (selectedMarker !== null) {
+            checkProximity(newLocation.coords, huntData.markers[selectedMarker].coordinate);
           }
         }
       );
@@ -46,8 +47,8 @@ const RouteMapScreen = ({ route, navigation }) => {
   
 
   useEffect(() => {
-    if (location && selectedMarker) {
-      getDirections(location, selectedMarker.coordinate, transportationMode);
+    if (location && selectedMarker !== null) {
+      getDirections(location, huntData.markers[selectedMarker].coordinate, transportationMode);
     }
   }, [transportationMode, selectedMarker, location]);
 
@@ -107,10 +108,10 @@ const RouteMapScreen = ({ route, navigation }) => {
     return 'orange'; // All other markers
   };
 
-  const handleMarkerPress = (marker) => {
+  const handleMarkerPress = (index) => {
     if (location) {
-      getDirections(location, marker.coordinate, transportationMode);
-      setSelectedMarker(marker);
+      getDirections(location, huntData.markers[index].coordinate, transportationMode);
+      setSelectedMarker(index);
     }
   };
 
@@ -133,12 +134,12 @@ const RouteMapScreen = ({ route, navigation }) => {
 
   const checkProximity = (userLocation, targetLocation) => {
     const distance = getDistance(userLocation, targetLocation);
-    if (distance <= TARGET_RADIUS){
+   /*  if (distance <= TARGET_RADIUS){
         Alert.alert (
             'You have reached your destination!',
             'Now you can press the camera icon to continue'
         )
-    }
+    } */
     setIsCloseToTarget(distance <= TARGET_RADIUS);
    
     
@@ -157,7 +158,7 @@ const RouteMapScreen = ({ route, navigation }) => {
         
         <Text className="text-center text-2xl font-extrabold mt-20" style={{ color: "#FF9800" }}>NEXT CLUE</Text>
         <Text className="text-center pt-1 text-white" style={{ fontSize: 16 }}>Make your way to</Text>
-        <Text className="text-center pt-1 text-xl font-bold text-white">{selectedMarker?.title || "Select a location"}</Text>
+        <Text className="text-center pt-1 text-xl font-bold text-white">{huntData.markers[selectedMarker]?.title || "Select a location"}</Text>
 
         <View className="flex-row justify-around p-4 mt-4">
           <TouchableOpacity onPress={() => setTransportationMode('driving')}>
@@ -191,7 +192,7 @@ const RouteMapScreen = ({ route, navigation }) => {
             key={index}
             coordinate={marker.coordinate}
             title={marker.title || `Spot ${index + 1}`}
-            onPress={() => handleMarkerPress(marker)}
+            onPress={() => handleMarkerPress(index)}
           >
             <View style={{ backgroundColor: getMarkerColor(index), paddingVertical: 2, paddingHorizontal: 6, borderRadius: 10 }}>
               <Text style={{ color: 'white', fontWeight: 'bold' }}>{index + 1}</Text>
@@ -233,8 +234,10 @@ const RouteMapScreen = ({ route, navigation }) => {
       <TouchableOpacity
   className="absolute bottom-14 right-36"
   onPress={() => {
-    if (selectedMarker) {
-      navigation.navigate('Camera', { huntData, selectedMarker });
+    if (selectedMarker !== null) {
+        navigation.navigate('Camera', { huntData: { ...huntData, id: huntData.huntId }, currentIndex: selectedMarker });
+
+
     } else {
       Alert.alert('No marker selected', 'Please select a marker first.');
     }

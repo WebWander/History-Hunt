@@ -8,7 +8,7 @@ import ProfileImageModal from './UploadPhotoModal';
 import * as ImagePicker from 'expo-image-picker';
 import { auth, db } from '../../firebaseConfig';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, updateDoc, collection, query, where, getDocs, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, where, getDoc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../../context/authContext';
 /* import RefreshControlComponent from '../Loading'; */
 import PropTypes  from 'prop-types';
@@ -19,6 +19,7 @@ const ProfileScreen = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [activeHunts, setActiveHunts] = useState([]);
   const [plannedHunts, setPlannedHunts] = useState([]);
+  const [completedHunts, setCompletedHunts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [usernames, setUsernames] = useState({}); 
 
@@ -26,10 +27,10 @@ const ProfileScreen = ({ navigation }) => {
     if (user && user.profileImageUrl) {
       setProfileImage(user.profileImageUrl);
     }
-    fetchHunts();
+    setupHuntListeners();
   }, [user]);
 
-  const fetchHunts = async () => {
+  const setupHuntListeners = () => {
     if (!user) return;
 
     const usernamesCache = {};
@@ -42,35 +43,60 @@ const ProfileScreen = ({ navigation }) => {
       return username;
     };
 
-    // Fetch hunts where the user is the creator
+    // Listen for changes in planned hunts
     const plannedQuery = query(collection(db, 'hunts'), where('userId', '==', user.uid));
-    const plannedSnapshot = await getDocs(plannedQuery);
-    const userPlannedHunts = await Promise.all(
-      plannedSnapshot.docs.map(async (doc) => {
-        const huntData = doc.data();
-        huntData.creatorName = await fetchUsername(huntData.userId);
-        return huntData;
-      })
-    );
-    setPlannedHunts(userPlannedHunts);
+    const plannedUnsubscribe = onSnapshot(plannedQuery, async (snapshot) => {
+      const userPlannedHunts = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const huntData = doc.data();
+          huntData.huntId = doc.id;
+          huntData.creatorName = await fetchUsername(huntData.userId);
+          return huntData;
+        })
+      );
+      setPlannedHunts(userPlannedHunts);
+    });
 
-    // Fetch hunts where the user is invited
+    // Listen for changes in active hunts
     const activeQuery = query(collection(db, 'hunts'), where('friends', 'array-contains', { uid: user.uid, username: user.username }));
-    const activeSnapshot = await getDocs(activeQuery);
-    const userActiveHunts = await Promise.all(
-      activeSnapshot.docs.map(async (doc) => {
-        const huntData = doc.data();
-        huntData.creatorName = await fetchUsername(huntData.userId);
-        return huntData;
-      })
-    );
-    setActiveHunts(userActiveHunts);
-    setUsernames(usernamesCache);
+    const activeUnsubscribe = onSnapshot(activeQuery, async (snapshot) => {
+      const userActiveHunts = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const huntData = doc.data();
+          huntData.huntId = doc.id;
+          huntData.creatorName = await fetchUsername(huntData.userId);
+          return huntData;
+        })
+      );
+      setActiveHunts(userActiveHunts);
+    });
+
+    // Listen for changes in completed hunts
+    const completedQuery = query(collection(db, 'hunts'), where('userId', '==', user.uid), where('completed', '==', true));
+    const completedUnsubscribe = onSnapshot(completedQuery, async (snapshot) => {
+      const userCompletedHunts = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const huntData = doc.data();
+          huntData.huntId = doc.id;
+          return huntData;
+        })
+      );
+      setCompletedHunts(userCompletedHunts);
+      setUsernames(usernamesCache);
+    });
+  
+
+  return () => {
+    plannedUnsubscribe();
+    activeUnsubscribe();
+    completedUnsubscribe();
   };
+};
+  
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchHunts().then(() => setRefreshing(false));
+    (setupHuntListeners).then(() => setRefreshing(false));
   };
 
 
@@ -138,7 +164,8 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const handleHuntPress = (hunt) => {
-    navigation.navigate('Hunt', { huntData: hunt });
+    navigation.navigate('Hunt', { huntData: { ...hunt, id: hunt.huntId } });
+
   };
 
   const renderFriends = (friends) => {
@@ -237,17 +264,21 @@ const ProfileScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <View style={{ alignItems: 'center', marginVertical: 20 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
-            <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>MEDALS</Text>
-            <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
-          </View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', width: '100%', marginVertical: 20 }}>
-            {[...Array(10)].map((_, index) => (
-              <View key={index} style={{ width: 50, height: 50, backgroundColor: '#ccc', borderRadius: 25, margin: 10 }} />
-            ))}
-          </View>
-        </View>
+  <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
+    <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
+    <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>MEDALS</Text>
+    <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
+  </View>
+  <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', width: '100%', marginVertical: 20 }}>
+    {completedHunts.map((hunt, index) => (
+      <Image
+        key={index}
+        source={{ uri: hunt.imageUrl }}
+        style={{ width: 50, height: 50, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 100, padding: 5, marginRight: 10}}
+      />
+    ))}
+  </View>
+</View>
 
         <StatusBar style="auto" />
       </ScrollView>

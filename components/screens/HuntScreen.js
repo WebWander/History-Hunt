@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const ConfirmHuntScreen = ({ route, navigation }) => {
   const { huntData } = route.params || { huntData: { title: 'Default Title', duration: '2', markers: [] } };
+  const huntId= huntData.id;
 
   const validMarkers = huntData.markers && huntData.markers.length > 0 ? huntData.markers : [];
 
@@ -97,7 +98,7 @@ const ConfirmHuntScreen = ({ route, navigation }) => {
       {/* Confirm Button */}
       <TouchableOpacity
            className="w-64 self-center" 
-           onPress={() => navigation.navigate('Route', { huntData })}
+           onPress={() => navigation.navigate('Route', { huntData: { ...huntData, id: huntData.huntId } })}
       >
       <LinearGradient
            colors={['#0951E2', '#BE3CFB']}

@@ -62,7 +62,7 @@ const MapScreen = ({ route, navigation }) => {
   
       const newMarker = {
         coordinate,
-        title: placeName,  // Use the place name as the title
+        title: placeName,  
       };
       
       setMarkers([...markers, newMarker]);
@@ -88,7 +88,7 @@ const MapScreen = ({ route, navigation }) => {
       const downloadURL = await getDownloadURL(refPath);
 
       // Save hunt data with image URL and friends array
-      await addDoc(collection(db, 'hunts'), {
+      const huntDocRef = await addDoc(collection(db, 'hunts'), {
         ...huntData,
         imageUrl: downloadURL, 
         userId: auth.currentUser.uid,
@@ -96,8 +96,11 @@ const MapScreen = ({ route, navigation }) => {
         friends: huntData.friends,
       });
 
+      const huntId = huntDocRef.id;
+
       Alert.alert('Success', 'Hunt has been saved!');
-      navigation.navigate('Profile');
+      navigation.navigate('Profile', { huntData: { ...huntData, id: huntId } } );
+
     } catch (error) {
       alert('Error saving hunt: ' + error.message);
     }
