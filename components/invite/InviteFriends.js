@@ -1,28 +1,43 @@
-import { collection, getDocs } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, SectionList, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, SectionList, TouchableOpacity, TextInput, Image, Alert, StyleSheet, FlatList } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Avatar } from 'react-native-elements';
-import Search from './SearchBar';
-import Button from '../ui/Button';
-import { db } from "../../firebaseConfig";
+import { db } from '../../firebaseConfig';
+import { collection, getDocs } from 'firebase/firestore';
+import { LinearGradient } from 'expo-linear-gradient';
+import PropTypes from 'prop-types';
 
-const InviteFriends = ({ navigation }) => {
+const InviteFriends = ({ route, navigation }) => {
+  const { huntData } = route.params || { huntData: { title: 'Default Title', friends: [], markers: [] } };
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState([]);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const usersCollection = collection(db, 'users');
-      const userSnapshot = await getDocs(usersCollection);
-      const userList = userSnapshot.docs.map(doc => ({ userId: doc.id, ...doc.data() }));
-      const uniqueUserList = Array.from(new Set(userList.map(user => user.userId)))
-        .map(id => userList.find(user => user.userId === id));
-      setUsers(uniqueUserList);
-    };
-
-    fetchUsers();
+    fetchRegisteredUsers();
   }, []);
+
+  const fetchRegisteredUsers = async () => {
+    const usersCollection = collection(db, 'users');
+    const usersSnapshot = await getDocs(usersCollection);
+    const usersList = usersSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+    setUsers(usersList);
+    setFilteredUsers(usersList);
+  };
+
+  useEffect(() => {
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      setFilteredUsers(
+        users.filter(user =>
+          user.username?.toLowerCase().includes(query)
+        )
+      );
+    } else {
+      setFilteredUsers(users);
+    }
+  }, [searchQuery, users]);
 
   const organizeUsers = (users, selectedUsers) => {
     const sections = users.reduce((acc, user) => {
@@ -35,7 +50,7 @@ const InviteFriends = ({ navigation }) => {
     }, {});
   
     const selectedUsernames = users
-      .filter(user => selectedUsers.includes(user.userId))
+      .filter(user => selectedUsers.includes(user))
       .map(user => user.username);
 
     return {
@@ -44,35 +59,46 @@ const InviteFriends = ({ navigation }) => {
     };
   };
 
-  const { selectedUsernames, sections } = organizeUsers(users, selectedUsers);
+  const { selectedUsernames, sections } = organizeUsers(filteredUsers, selectedUsers);
 
-  const handleAvatarPress = (userId) => {
+  const handleUserSelect = (user) => {
     setSelectedUsers((prevSelectedUsers) => {
-      if (prevSelectedUsers.includes(userId)) {
-        return prevSelectedUsers.filter(id => id !== userId);
+      if (prevSelectedUsers.includes(user)) {
+        return prevSelectedUsers.filter(u => u.uid !== user.uid);
       } else {
-        return [...prevSelectedUsers, userId];
+        return [...prevSelectedUsers, user];
       }
     });
   };
 
+  const handleInvite = () => {
+    try {
+      const friends = selectedUsers.map(user => ({
+        uid: user.uid,
+        username: user.username,
+      }));
+      const updatedHuntData = { ...huntData, friends };
+      Alert.alert('Success', 'Friends have been invited!');
+      navigation.navigate('Map', { huntData: updatedHuntData });
+    } catch (error) {
+      alert('Error inviting friends: ' + error.message);
+    }
+  };
+
   const renderGridItem = ({ item }) => {
-    const isSelected = selectedUsers.includes(item.userId);
+    const isSelected = selectedUsers.includes(item);
 
     return (
-      <TouchableOpacity onPress={() => handleAvatarPress(item.userId)}>
-        <View style={styles.avatarItem}>
-          <Avatar
-            size={50}
-            rounded
-            containerStyle={[
-              styles.avatar,
-              isSelected ? styles.selectedAvatar : { backgroundColor: '#ccc' }
-            ]}
-            icon={{ name: isSelected ? 'check' : 'user', type: 'font-awesome', color: isSelected ? 'white' : '#808080' }}
-            overlayContainerStyle={{ backgroundColor: isSelected ? 'green' : '#ccc' }}
-            source={{ uri: item.profileImageUrl || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png' }}
-          />
+      <TouchableOpacity onPress={() => handleUserSelect(item)}>
+        <View style={[styles.avatarItem, isSelected && styles.selectedAvatarItem]}>
+          {isSelected ? (
+            <Ionicons name="checkmark-circle" size={60} color="green" />
+          ) : (
+            <Image
+              source={{ uri: item.profileImageUrl || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png' }}
+              style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 5 }}
+            />
+          )}
           <Text>{item.username}</Text>
         </View>
       </TouchableOpacity>
@@ -86,94 +112,103 @@ const InviteFriends = ({ navigation }) => {
         data={section.data}
         renderItem={renderGridItem}
         numColumns={3}
-        keyExtractor={(item) => item.userId}
+        keyExtractor={(item) => item.uid}
       />
     </View>
   );
 
   return (
-    <View style={styles.mainContainer}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Login')}>
-        <Ionicons name="arrow-back" size={24} color="blue" style={{marginLeft: 20}} />
-      </TouchableOpacity>
-      <View style={styles.headingContainer}>
-        <Text style={styles.headingText}>Invite Friends</Text>
+    <SafeAreaView className="flex-1 bg-white px-6">
+      <View className="flex-row justify-between mb-6">
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={32} color="#0951E2" />
+        </TouchableOpacity>
       </View>
-      <Search  />
 
-      {selectedUsernames.length > 0 && (
-        <View style={styles.selectedUserContainer}>
-          {selectedUsernames.map(username => (
-            <Text key={username} style={styles.selectedUserText}>{username}</Text>
-          ))}
-        </View>
-      )}
+      <Text style={{ fontSize: 40, fontWeight: '600', textAlign: 'center', marginBottom: 8 }}>Invite Friends</Text>
+
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="gray" style={{ marginRight: 8 }} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search users..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
 
       <SectionList
         sections={sections}
-        keyExtractor={(item, index) => item.userId + index}
-        renderItem={({ item }) => null} 
+        keyExtractor={(item, index) => item.uid + index}
+        renderItem={({ item }) => null}
         renderSectionHeader={renderSection}
         contentContainerStyle={styles.sectionListContent}
       />
 
-      <Button 
-        onPress={() => console.log('Button Pressed')}
-        style={styles.customButton}
-      >
-        <Text style={{color: 'white', fontSize: 16, fontWeight: '900' }}>INVITE</Text>
-      </Button>
-    </View>
+      <TouchableOpacity style={{ width: 256, alignSelf: 'center', marginVertical: 20, position:'absolute', bottom: 30 }} onPress={handleInvite}>
+        <LinearGradient
+          colors={['#0951E2', '#BE3CFB']}
+          style={{ borderRadius: 50, paddingVertical: 12, alignItems: 'center' }}
+          start={[0, 0]}
+          end={[1, 0]}
+        >
+          <Text style={{ fontSize: 18, fontWeight: '700', color: 'white' }}>INVITE</Text>
+        </LinearGradient>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
-}
+};
+
+InviteFriends.propTypes = {
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      huntData: PropTypes.object.isRequired,
+    }).isRequired,
+  }).isRequired,
+  navigation: PropTypes.shape({
+    goBack: PropTypes.func.isRequired,
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default InviteFriends;
 
 const styles = StyleSheet.create({
-  mainContainer: {
-    marginTop: 40,
-    flex: 1,
-  },
-  headingText: {
-    fontSize: 40,
-    marginLeft: 20,
-  },
-  headingContainer: {
+  searchContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
   },
   avatarItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 70, 
-    height: 80, 
+    width: 90,
+    height: 100,
     marginBottom: 20,
     marginRight: 10,
-    backgroundColor: '#ccc', 
-    borderRadius: 25, 
-    marginLeft: 20,
+    backgroundColor: '#F3F3F3',
+    borderRadius: 35,
+    marginLeft: 10,
+    borderWidth: 2,
+    borderColor: 'transparent',
   },
-  avatar: {
-    backgroundColor: '#ccc',
-  },
-  selectedAvatar: {
-    backgroundColor: 'green',
-  },
-  customButton: {
-    position: 'absolute',
-    bottom: 90, 
-    left: 10, 
-    right: 10, 
-    alignItems: 'center',
-    backgroundColor: '#007AFF',
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 5,
+  selectedAvatarItem: {
+    backgroundColor: '#F3F3F3',
   },
   sectionHeader: {
     fontSize: 15,
     fontWeight: '500',
-    backgroundColor: '#f4f4f4',
-    paddingHorizontal: 10,
+    backgroundColor: 'white',
+    paddingHorizontal: 15,
     paddingVertical: 5,
     color: '#ffb6c1',
   },
