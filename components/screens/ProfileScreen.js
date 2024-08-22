@@ -6,39 +6,106 @@ import ProfileImageModal from './UploadPhotoModal';
 import * as ImagePicker from 'expo-image-picker';
 import { auth, db } from '../../firebaseConfig';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, where, getDoc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../../context/authContext';
-
+import PropTypes from 'prop-types';
 
 const ProfileScreen = ({ navigation }) => {
-  const { user: authUser } = useAuth();
-  const [user, setUser] = useState(authUser);
-  const [profileImage, setProfileImage] = useState(authUser?.profileImageUrl || 'https://example.com/profile.jpg');
+  const { user } = useAuth();
+  const [profileImage, setProfileImage] = useState(user?.profileImageUrl || 'https://example.com/profile.jpg');
   const [modalVisible, setModalVisible] = useState(false);
-  const [hunts, setHunts] = useState([]);
+  const [activeHunts, setActiveHunts] = useState([]);
+  const [plannedHunts, setPlannedHunts] = useState([]);
+  const [completedHunts, setCompletedHunts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [usernames, setUsernames] = useState({});
 
   useEffect(() => {
-    if (authUser) {
-      setUser(authUser);
-      if (authUser.profileImageUrl) {
-        setProfileImage(authUser.profileImageUrl);
-      }
-      fetchHunts();
+    if (user && user.profileImageUrl) {
+      setProfileImage(user.profileImageUrl);
     }
-  }, [authUser]);
+    setupHuntListeners();  // Set up Firestore listeners
+  }, [user]);
 
-  const fetchHunts = async () => {
+  const setupHuntListeners = () => {
     if (!user) return;
-    const q = query(collection(db, 'hunts'), where('userId', '==', user.uid));
-    const querySnapshot = await getDocs(q);
-    const userHunts = querySnapshot.docs.map(doc => doc.data());
-    setHunts(userHunts);
+
+    const usernamesCache = {};
+
+    const fetchUsername = async (uid) => {
+      if (usernamesCache[uid]) return usernamesCache[uid];
+      const userDoc = await getDoc(doc(db, 'users', uid));
+      const username = userDoc.exists() ? userDoc.data().username : 'Unknown';
+      usernamesCache[uid] = username;
+      return username;
+    };
+
+    // Listen for changes in planned hunts (hunts the user has created)
+    const plannedQuery = query(collection(db, 'hunts'), where('userId', '==', user.uid));
+    const plannedUnsubscribe = onSnapshot(plannedQuery, async (snapshot) => {
+      const userPlannedHunts = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const huntData = doc.data();
+          huntData.huntId = doc.id;
+          huntData.creatorName = await fetchUsername(huntData.userId);
+          return huntData;
+        })
+      );
+      setPlannedHunts(userPlannedHunts);
+    });
+
+    // Listen for changes in active hunts (hunts the user is invited to and hasn't completed)
+    const activeQuery = query(
+      collection(db, 'hunts'),
+      where('friends', 'array-contains', { uid: user.uid, username: user.username })
+    );
+    const activeUnsubscribe = onSnapshot(activeQuery, async (snapshot) => {
+      const userActiveHunts = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const huntData = doc.data();
+
+          // Only include hunts that the user hasn't completed
+          if (!huntData.completedBy || !huntData.completedBy.includes(user.uid)) {
+            huntData.huntId = doc.id;
+            huntData.creatorName = await fetchUsername(huntData.userId);
+            return huntData;
+          }
+        })
+      );
+
+      // Filter out any undefined results in case some were skipped
+      setActiveHunts(userActiveHunts.filter(hunt => hunt));
+    });
+
+    // Listen for changes in completed hunts (hunts the user has completed)
+    const completedQuery = query(
+      collection(db, 'hunts'),
+      where('completedBy', 'array-contains', user.uid)  // Requires a composite index
+    );
+    const completedUnsubscribe = onSnapshot(completedQuery, async (snapshot) => {
+      const userCompletedHunts = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const huntData = doc.data();
+          huntData.huntId = doc.id;
+          return huntData;
+        })
+      );
+      setCompletedHunts(userCompletedHunts);
+      setUsernames(usernamesCache);
+    });
+
+    // Unsubscribe from listeners on component unmount
+    return () => {
+      plannedUnsubscribe();
+      activeUnsubscribe();
+      completedUnsubscribe();
+    };
   };
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchHunts().then(() => setRefreshing(false));
+    setupHuntListeners();
+    setRefreshing(false);
   };
 
   const pickImage = async () => {
@@ -48,7 +115,7 @@ const ProfileScreen = ({ navigation }) => {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 1
+        quality: 0.5
       });
 
       if (!result.canceled) {
@@ -96,39 +163,48 @@ const ProfileScreen = ({ navigation }) => {
 
   const updateProfileImage = async (downloadURL) => {
     const userRef = doc(db, 'users', auth.currentUser.uid);
-    await updateDoc(userRef, { 
-      profileImageUrl: downloadURL || "",
-      pushToken: authUser.pushToken || ""
-
-    });
+    await updateDoc(userRef, { profileImageUrl: downloadURL });
     console.log('Profile image URL updated');
   };
+
   const handlePress = () => {
     setModalVisible(true);
   };
 
-  if (!user) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
+  const handleHuntPress = (hunt) => {
+    navigation.navigate('Hunt', { huntData: { ...hunt, id: hunt.huntId } });
+  };
+
+  const renderFriends = (hunt) => {
+    const friends = hunt.friends || [];
+    const creatorName = hunt.creatorName || 'Unknown'; // Ensure creator's name is included
+
+    // Filter out the current user from the friends list
+    const filteredFriends = friends.filter(friend => friend.uid !== user.uid);
+
+    if (filteredFriends.length === 0) return `Soloing it!`;
+    if (filteredFriends.length === 1) return `With  ${filteredFriends[0].username}`;
+    if (filteredFriends.length === 2) return `With ${creatorName}, ${filteredFriends[0].username}, and ${filteredFriends[1].username}`;
+    return `With ${creatorName}, ${filteredFriends.slice(0, -1).map(friend => friend.username).join(', ')}, and ${filteredFriends[filteredFriends.length - 1].username}`;
+};
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <ScrollView
-        style={{ flex: 1, padding: 20 }}
+        style={{ flex: 1, paddingHorizontal: 30, paddingVertical: 20 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
         }
       >
-        <TouchableOpacity style={{ position: 'absolute', top: 10, left: 10 }} onPress={() => console.log('Close')}>
-          <Ionicons name="close" size={30} color="#ff8c00" />
+        <TouchableOpacity style={{ position: 'absolute' }} onPress={() => navigation.goBack()}>
+          <Ionicons name="close" size={30} color="orange" />
         </TouchableOpacity>
 
         <View style={{ alignItems: 'center', marginTop: 50, position: 'relative' }}>
-          <View style={{ borderColor: '#dda0dd', borderWidth: 4, borderRadius: 60, overflow: 'hidden', width: 120, height: 120 }}>
+          <View style={{ borderColor: '#6A0DAD', borderWidth: 2, borderRadius: 80, overflow: 'hidden', width: 140, height: 140 }}>
             <Image
               source={{ uri: profileImage }}
               style={{ width: '100%', height: '100%' }}
@@ -140,7 +216,7 @@ const ProfileScreen = ({ navigation }) => {
               position: 'absolute',
               right: 130,
               bottom: 0,
-              backgroundColor: '#ff8c00',
+              backgroundColor: '#FF6347',
               borderRadius: 15,
               padding: 5,
             }}
@@ -161,48 +237,72 @@ const ProfileScreen = ({ navigation }) => {
         />
 
         <View style={{ marginVertical: 20 }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#dda0dd' }}>Active Hunts:</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 20 }}>
-            <Image source={{ uri: 'https://example.com/image1.jpg' }} style={{ width: 40, height: 40, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 100, padding: 5, marginRight: 10 }} />
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Women's Rights in New York City</Text>
-              <Text style={{ color: 'gray' }}>Soloing it!</Text>
-            </View>
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10 }}>
-            <Image source={{ uri: 'https://example.com/image2.jpg' }} style={{ width: 40, height: 40, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 100, padding: 5, marginRight: 10 }} />
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>A Start to LGBTQ Rights Movements</Text>
-              <Text style={{ color: 'gray' }}>With Ron and Harry</Text>
-            </View>
-          </View>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#6A0DAD' }}>Active Hunts:</Text>
+          {activeHunts.map((hunt, index) => (
+            <TouchableOpacity key={index} onPress={() => handleHuntPress(hunt)}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 20 }}>
+                <Image
+                  source={{ uri: hunt.imageUrl }}
+                  style={{ width: 50, height: 50, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 100, padding: 5, marginRight: 10 }}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{hunt.title}</Text>
+                  <Text style={{ color: 'gray' }}>{renderFriends(hunt)}</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))}
         </View>
 
-        <View style={{ marginVertical: 0 }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#dda0dd' }}>Planned Hunts:</Text>
-          {hunts.map((hunt, index) => (
-            <View key={index} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 20 }}>
-              <Image source={{ uri: hunt.imageUrl }} style={{ width: 40, height: 40, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 100, padding: 5, marginRight: 10 }} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{hunt.title}</Text>
-                <Text style={{ color: 'gray' }}>  {hunt.friends.join(',')}</Text>
+        <View style={{ marginVertical: 20 }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#6A0DAD' }}>Planned Hunts:</Text>
+          {plannedHunts.map((hunt, index) => (
+            <TouchableOpacity key={index} onPress={() => handleHuntPress(hunt)}>
+              <View key={index} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 20 }}>
+                <Image
+                  source={{ uri: hunt.imageUrl }}
+                  style={{ width: 40, height: 40, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 100, padding: 5, marginRight: 10 }}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{hunt.title}</Text>
+                  <Text style={{ color: 'gray' }}>{renderFriends(hunt)}</Text>
+                </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
-          <TouchableOpacity onPress={() => navigation.navigate('Customize')}>
-            <Text style={{ marginTop: 20, color: '#ff8c00', fontSize: 16, textDecorationLine: 'underline', fontWeight: '500' }}>create hunt</Text>
-          </TouchableOpacity>
         </View>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Customize')}>
+          <Text style={{ marginTop: 20, color: '#FF6347', fontSize: 16 }}>Create Hunt</Text>
+        </TouchableOpacity>
 
         <View style={{ alignItems: 'center', marginVertical: 20 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
             <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#0000cd' }}>MEDALS</Text>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>MEDALS</Text>
             <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', width: '100%', marginVertical: 20 }}>
-            {[...Array(10)].map((_, index) => (
-              <View key={index} style={{ width: 50, height: 50, backgroundColor: '#ccc', borderRadius: 25, margin: 10 }} />
+            {completedHunts.map((hunt, index) => (
+              <Image
+                key={index}
+                source={{ uri: hunt.imageUrl }}
+                style={{ width: 60, height: 60, borderColor: '#6A0DAD', borderWidth: 0.5, borderRadius: 30, margin: 10 }}
+              />
+            ))}
+
+            {/* Adding empty medal placeholders */}
+            {Array.from({ length: 8 - completedHunts.length }).map((_, index) => (
+              <View
+                key={`placeholder-${index}`}
+                style={{
+                  width: 60,
+                  height: 60,
+                  backgroundColor: '#d3d3d3', // Gray color for empty medals
+                  borderRadius: 30,
+                  margin: 10,
+                }}
+              />
             ))}
           </View>
         </View>
@@ -211,6 +311,13 @@ const ProfileScreen = ({ navigation }) => {
       </ScrollView>
     </SafeAreaView>
   );
-}
+};
+
+ProfileScreen.propTypes = {
+  navigation: PropTypes.shape({
+    goBack: PropTypes.func.isRequired,
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default ProfileScreen;
