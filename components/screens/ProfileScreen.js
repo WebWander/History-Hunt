@@ -183,13 +183,13 @@ const ProfileScreen = ({ navigation }) => {
     const filteredFriends = friends.filter(friend => friend.uid !== user.uid);
 
     if (filteredFriends.length === 0) return `Soloing it!`;
-    if (filteredFriends.length === 1) return `With  ${filteredFriends[0].username}`;
+    if (filteredFriends.length === 1) return `With ${filteredFriends[0].username}`;
     if (filteredFriends.length === 2) return `With ${creatorName}, ${filteredFriends[0].username}, and ${filteredFriends[1].username}`;
     return `With ${creatorName}, ${filteredFriends.slice(0, -1).map(friend => friend.username).join(', ')}, and ${filteredFriends[filteredFriends.length - 1].username}`;
 };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F8F8F8' }}>
       <ScrollView
         style={{ flex: 1, paddingHorizontal: 30, paddingVertical: 20 }}
         refreshControl={
@@ -200,11 +200,11 @@ const ProfileScreen = ({ navigation }) => {
         }
       >
         <TouchableOpacity style={{ position: 'absolute' }} onPress={() => navigation.goBack()}>
-          <Ionicons name="close" size={30} color="orange" />
+          <Ionicons name="close" size={30} color="#FF9C2A" />
         </TouchableOpacity>
 
         <View style={{ alignItems: 'center', marginTop: 50, position: 'relative' }}>
-          <View style={{ borderColor: '#6A0DAD', borderWidth: 2, borderRadius: 80, overflow: 'hidden', width: 140, height: 140 }}>
+          <View style={{ borderColor: '#D076FF', borderWidth: 3, borderRadius: 80, overflow: 'hidden', width: 140, height: 140 }}>
             <Image
               source={{ uri: profileImage }}
               style={{ width: '100%', height: '100%' }}
@@ -216,18 +216,18 @@ const ProfileScreen = ({ navigation }) => {
               position: 'absolute',
               right: 130,
               bottom: 0,
-              backgroundColor: '#FF6347',
+              backgroundColor: '#FF9C2A',
               borderRadius: 15,
               padding: 5,
             }}
             onPress={handlePress}
           >
-            <Ionicons name="pencil" size={16} color="white" />
+            <Ionicons name="pencil" size={17} color="white" />
           </TouchableOpacity>
         </View>
 
         <View style={{ alignItems: 'center', marginTop: 20 }}>
-          <Text style={{ fontSize: 30, fontWeight: 'bold' }}>{user?.username || 'Username'}</Text>
+          <Text style={{ fontSize: 30, fontWeight: 450 }}>{user?.username || 'Username'}</Text>
         </View>
         <ProfileImageModal
           visible={modalVisible}
@@ -237,7 +237,7 @@ const ProfileScreen = ({ navigation }) => {
         />
 
         <View style={{ marginVertical: 20 }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#6A0DAD' }}>Active Hunts:</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#D076FF' }}>Active Hunts:</Text>
           {activeHunts.map((hunt, index) => (
             <TouchableOpacity key={index} onPress={() => handleHuntPress(hunt)}>
               <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 20 }}>
@@ -255,7 +255,7 @@ const ProfileScreen = ({ navigation }) => {
         </View>
 
         <View style={{ marginVertical: 20 }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#6A0DAD' }}>Planned Hunts:</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#D076FF' }}>Planned Hunts:</Text>
           {plannedHunts.map((hunt, index) => (
             <TouchableOpacity key={index} onPress={() => handleHuntPress(hunt)}>
               <View key={index} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 20 }}>
@@ -273,13 +273,13 @@ const ProfileScreen = ({ navigation }) => {
         </View>
 
         <TouchableOpacity onPress={() => navigation.navigate('Customize')}>
-          <Text style={{ marginTop: 20, color: '#FF6347', fontSize: 16 }}>Create Hunt</Text>
+          <Text style={{ marginTop: 20, color: '#FF6347', fontSize: 16, textDecorationLine: 'underline' }}>create hunt</Text>
         </TouchableOpacity>
 
         <View style={{ alignItems: 'center', marginVertical: 20 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
             <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'black' }}>MEDALS</Text>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#3D4FFF' }}>MEDALS</Text>
             <View style={{ flex: 1, height: 1, backgroundColor: '#ddd', marginHorizontal: 20 }} />
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', width: '100%', marginVertical: 20 }}>
